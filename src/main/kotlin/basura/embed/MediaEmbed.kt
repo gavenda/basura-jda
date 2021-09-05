@@ -20,18 +20,6 @@ fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, p
         MediaFormat.SPECIAL
     )
 
-    val embedMedias = mediaList
-        ?.filter { it.mediaId == media.id }
-        ?.map {
-            EmbedMedia(
-                discordName = it.user?.name,
-                status = it.status,
-                score = it.score,
-                progress = it.progress
-            )
-        }
-        ?.sortedWith(compareBy({ it.progress }, { it.discordName }))
-
     val completed = StringBuilder()
     val planned = StringBuilder()
     val inProgress = StringBuilder()
@@ -40,7 +28,19 @@ fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, p
     val notOnList = StringBuilder()
     val repeating = StringBuilder()
 
-    if (embedMedias != null) {
+    if (mediaList != null) {
+        val embedMedias = mediaList
+            .filter { it.mediaId == media.id }
+            .map { ml ->
+                EmbedMedia(
+                    discordName = ml.user?.name,
+                    status = ml.status,
+                    score = ml.score,
+                    progress = ml.progress
+                )
+            }
+            .sortedWith(compareBy({ it.progress }, { it.discordName }))
+
         for (embedMedia in embedMedias) {
             when (embedMedia.status) {
                 MediaListStatus.COMPLETED -> {
@@ -85,11 +85,25 @@ fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, p
         duration += " per episode"
     }
 
+    val mediaDescription = StringBuilder()
+
+    if(media.title?.romaji != null && media.title.english != null) {
+        mediaDescription.append("_(Romaji: ${media.title.romaji})_\n")
+    }
+    if(media.title?.native != null) {
+        mediaDescription.append("_(Native: ${media.title.native})_\n")
+    }
+
+    val actualDescription = media.description
+        .htmlClean()
+        .abbreviate(DESCRIPTION_LIMIT)
+
+    mediaDescription.append("\n")
+    mediaDescription.append(actualDescription)
+
     return Embed {
-        title = media.title?.romaji ?: media.title?.english
-        description = media.description
-            .htmlClean()
-            .abbreviate(DESCRIPTION_LIMIT)
+        title = media.title?.english ?: media.title?.romaji
+        description = mediaDescription.toString()
         thumbnail = media.coverImage?.extraLarge
         url = media.siteUrl
         color = 0xFF0000

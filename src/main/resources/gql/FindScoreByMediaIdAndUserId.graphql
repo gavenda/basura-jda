@@ -14,6 +14,7 @@ query($userId: [Int], $mediaId: [Int], $page: Int, $perPage: Int) {
       progress
       repeat
       user {
+        id
         name
       }
       mediaId

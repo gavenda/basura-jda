@@ -6,3 +6,6 @@ build
 
 # Ignore IntelliJ project information
 .idea
+
+# Ignore environment files
+.env

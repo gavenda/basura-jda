@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    application
     kotlin("jvm") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
 }
@@ -66,27 +67,8 @@ tasks {
             )
         }
     }
+}
 
-    val fatJar = register<Jar>("fatJar") {
-        manifest {
-            attributes["Implementation-Title"] = project.name
-            attributes["Implementation-Version"] = archiveVersion
-            attributes["Main-Class"] = basuraMainClass
-        }
-
-        archiveBaseName.set("${project.name}-bot")
-
-        val dependencyClasses = configurations.runtimeClasspath.get()
-            .filter { it.path.endsWith(".jar") }
-            .map {
-                if (it.isDirectory) it else zipTree(it)
-            }
-
-        from(dependencyClasses)
-        with(jar.get() as CopySpec)
-    }
-
-    build {
-        dependsOn(fatJar)
-    }
+application {
+    mainClass.set(basuraMainClass)
 }

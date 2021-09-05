@@ -38,3 +38,12 @@ Interaction commands in my opinion, should mitigate the necessary need for a hel
 
 ## Can I contribute to the code?
 Feel free to fork the code. Since this isn't a publicly hosted bot yet, you are free to host your own.
+
+## Get me up and running!
+Rename `example.env` to `.env` and put your discord bot token.
+
+```bash
+./gradlew installDist
+docker-compose build
+docker-compose up
+```
