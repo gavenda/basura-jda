@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import org.kodein.di.instance
 import org.ktorm.database.Database
+import org.ktorm.dsl.eq
+import org.ktorm.entity.filter
 import org.ktorm.entity.map
 
 fun JDA.addFindCommands() {
@@ -25,12 +27,12 @@ fun JDA.addFindCommands() {
             val query = event.requiredOption("query").asString
             val media = aniList.findMedia(query)
 
-            if(media == null) {
+            if (media == null) {
                 event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
                 return@onCommand
             }
 
-            val mediaList = lookupMediaList(media)
+            val mediaList = lookupMediaList(media, event.guild?.idLong)
 
             event.sendMediaResults(media, mediaList)
         } catch (e: ErrorResponseException) {
@@ -51,12 +53,12 @@ fun JDA.addFindCommands() {
             val query = event.requiredOption("query").asString
             val media = aniList.findMediaByType(query, MediaType.ANIME)
 
-            if(media == null) {
+            if (media == null) {
                 event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
                 return@onCommand
             }
 
-            val mediaList = lookupMediaList(media)
+            val mediaList = lookupMediaList(media, event.guild?.idLong)
 
             event.sendMediaResults(media, mediaList)
         } catch (e: ErrorResponseException) {
@@ -77,12 +79,12 @@ fun JDA.addFindCommands() {
             val query = event.requiredOption("query").asString
             val media = aniList.findMediaByType(query, MediaType.MANGA)
 
-            if(media == null) {
+            if (media == null) {
                 event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
                 return@onCommand
             }
 
-            val mediaList = lookupMediaList(media)
+            val mediaList = lookupMediaList(media, event.guild?.idLong)
 
             event.sendMediaResults(media, mediaList)
         } catch (e: ErrorResponseException) {
@@ -116,12 +118,12 @@ fun JDA.addFindCommands() {
                 seasonYear = seasonYear
             )
 
-            if(media == null) {
+            if (media == null) {
                 event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
                 return@onCommand
             }
 
-            val mediaList = lookupMediaList(media)
+            val mediaList = lookupMediaList(media, event.guild?.idLong)
 
             event.sendMediaResults(media, mediaList)
         } catch (e: ErrorResponseException) {
@@ -137,12 +139,14 @@ fun JDA.addFindCommands() {
     }
 }
 
-internal suspend fun lookupMediaList(medias: List<Media>?): List<MediaList>? {
+internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<MediaList>? {
     val db by kodein.instance<Database>()
     val aniList by kodein.instance<AniList>()
 
     return aniList.findScoreByUsersAndMedias(
-        userIds = db.users.map { it.aniListId },
+        userIds = db.users
+            .filter { it.discordGuildId eq (guildId ?: -1) }
+            .map { it.aniListId },
         mediaIds = medias?.map { it.id }
     )
 }

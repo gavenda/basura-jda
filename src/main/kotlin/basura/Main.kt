@@ -25,6 +25,7 @@ fun main() {
     jda.getGuildById(GUILD_BOGUS_ID)
         ?.updateBasuraCommands()
         ?.queue()
+    jda.updateBasuraCommands().queue()
 
     jda.presence.activity = Activity.competing("Trash")
 }

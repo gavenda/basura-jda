@@ -19,17 +19,18 @@ fun JDA.addUserCommand() {
     onCommand(Command.USER) { event ->
         event.awaitDeferReply()
 
+        val usernameOpt = event.getOption("username")?.asString
         val guild = event.guild
         // Assure not direct message
-        if (guild == null) {
+        if (guild == null && usernameOpt == null) {
             event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
             return@onCommand
         }
 
-        val guildId = guild.idLong
+        val guildId = guild?.idLong!!
 
         try {
-            val username = event.getOption("username")?.asString
+            val username = usernameOpt
                 ?: db.users.firstOrNull {
                     (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
                 }?.aniListUsername

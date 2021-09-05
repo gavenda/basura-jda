@@ -2,9 +2,12 @@ package basura
 
 import basura.discord.await
 import io.github.furstenheim.CopyDown
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction
 import net.dv8tion.jda.api.interactions.commands.OptionMapping
+import java.util.*
 
 /**
  * Loads any file in resources and returns them as a string.
@@ -33,11 +36,25 @@ suspend fun SlashCommandEvent.awaitDeferReply() = deferReply().await()
 /**
  * Send a localized message.
  */
-suspend fun SlashCommandEvent.sendLocalizedMessage(key: String) {
+suspend fun SlashCommandEvent.sendLocalizedMessage(key: String) =
     hook.sendMessage(
         Messages.whenApplicableFor(user, guild)
             .get(key)
     ).await()
+
+/**
+ * Delete the messages in bulk.
+ * @param messages messages to delete
+ */
+suspend fun PrivateChannel.deleteMessages(messages: List<Message>) {
+    val messageIds = messages.map { it.idLong }
+    val sortedMessageIds = TreeSet<Long>(Comparator.reverseOrder()).apply {
+        addAll(messageIds)
+    }
+
+    sortedMessageIds.forEach {
+        deleteMessageById(it).await()
+    }
 }
 
 /**

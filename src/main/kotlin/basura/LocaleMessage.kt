@@ -28,6 +28,8 @@ object LocaleMessage {
         const val NoMatchingCharacter = "find-no-matching-character"
     }
 
+    const val DirectMessageCleared = "direct-message-cleared"
+    const val DirectMessageOnly = "direct-message-only"
     const val UnknownError = "unknown-error"
 }
 

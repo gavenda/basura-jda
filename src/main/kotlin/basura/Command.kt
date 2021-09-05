@@ -7,6 +7,7 @@ import basura.discord.interaction.updateCommands
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
 import kotlinx.coroutines.DelicateCoroutinesApi
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 
 object Command {
@@ -20,10 +21,10 @@ object Command {
     const val LINK = "link"
     const val CHARACTER = "character"
     const val UNLINK = "unlink"
+    const val CLEAR = "clear"
 }
 
-@DelicateCoroutinesApi
-fun Guild.updateBasuraCommands() = updateCommands {
+fun JDA.updateBasuraCommands() = updateCommands {
     command(
         name = Command.ANIME,
         description = "Looks up the name of the anime."
@@ -133,4 +134,13 @@ fun Guild.updateBasuraCommands() = updateCommands {
             choice(MediaFormat.NOVEL.displayName, MediaFormat.NOVEL.name)
         }
     }
+    command(
+        name = Command.CLEAR,
+        description = "Clear the message history between you and the bot. (only works for direct messages)"
+    )
+}
+
+@DelicateCoroutinesApi
+fun Guild.updateBasuraCommands() = updateCommands {
+
 }

@@ -13,7 +13,7 @@ and any that heightens your level of retardedness.
 """
 
 fun JDA.addAboutCommand() {
-    onCommand("about") { event ->
+    onCommand(Command.ABOUT) { event ->
         event.replyEmbeds(
             Embed {
                 title = "What is Basura?"
