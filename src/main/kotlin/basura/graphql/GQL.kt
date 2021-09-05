@@ -1,6 +1,6 @@
 package basura.graphql
 
-import basura.kodein
+import basura.basura
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -13,8 +13,8 @@ import org.kodein.di.instance
 
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend inline fun <reified V, reified R> gqlQuery(graphUrl: String, query: String, variables: V): R {
-    val json by kodein.instance<Json>()
-    val client by kodein.instance<OkHttpClient>()
+    val json by basura.instance<Json>()
+    val client by basura.instance<OkHttpClient>()
     val gqlRequest = GQLRequest(query, variables)
     val requestBody = json.encodeToString(gqlRequest)
         .toRequestBody()

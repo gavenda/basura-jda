@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
+import java.util.Properties
 
 plugins {
     application
@@ -6,13 +8,24 @@ plugins {
     kotlin("plugin.serialization") version "1.5.30"
 }
 
-group = "basura"
-version = "1.0"
-
 repositories {
     mavenCentral()
     maven("https://m2.dv8tion.net/releases")
 }
+
+val basuraMainClass = "basura.MainKt"
+val gitHash: String = ByteArrayOutputStream()
+    .use { outputStream ->
+    project.exec {
+        commandLine("git")
+        args("rev-parse", "--short", "HEAD")
+        standardOutput = outputStream
+    }
+    outputStream.toString().trim()
+}
+
+group = "basura"
+version = "1.0-$gitHash"
 
 dependencies {
     // Align versions of all Kotlin components
@@ -51,8 +64,6 @@ dependencies {
     implementation("org.flywaydb:flyway-core:7.14.1") // Migration
 }
 
-val basuraMainClass = "basura.MainKt"
-
 tasks {
     withType<Jar> {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -63,9 +74,29 @@ tasks {
             jvmTarget = "16"
             freeCompilerArgs = listOf(
                 "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xuse-experimental=kotlinx.coroutines.DelicateCoroutinesApi",
                 "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi"
             )
         }
+    }
+
+    val generateVersionProperties = register(name = "generateVersionProperties") {
+        doLast {
+            val resourcesDir = File("$buildDir/resources/main").apply {
+                mkdirs()
+            }
+            val propertiesFilePath = File(resourcesDir, "/version.properties").apply {
+                createNewFile()
+            }
+            Properties().apply {
+                setProperty("version", version.toString())
+                store(propertiesFilePath.outputStream(), null)
+            }
+        }
+    }
+
+    processResources {
+        dependsOn(generateVersionProperties)
     }
 }
 

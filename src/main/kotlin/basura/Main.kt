@@ -11,8 +11,8 @@ internal const val GUILD_BOGUS_ID = 369435836627812352
 
 @DelicateCoroutinesApi
 fun main() {
-    val jda by kodein.instance<JDA>()
-    val dataSource by kodein.instance<DataSource>()
+    val jda by basura.instance<JDA>()
+    val dataSource by basura.instance<DataSource>()
 
     // Migrate database
     Flyway.configure()
@@ -28,4 +28,8 @@ fun main() {
     jda.updateBasuraCommands().queue()
 
     jda.presence.activity = Activity.competing("Trash")
+
+    Runtime.getRuntime().addShutdownHook(object : Thread() {
+        override fun run() = jda.shutdown()
+    })
 }

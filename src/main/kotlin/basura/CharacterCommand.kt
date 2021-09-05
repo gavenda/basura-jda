@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import org.kodein.di.instance
 
 fun JDA.addCharacterCommand() {
-    val aniList by kodein.instance<AniList>()
+    val aniList by basura.instance<AniList>()
 
     onCommand(Command.CHARACTER) { event ->
         event.awaitDeferReply()

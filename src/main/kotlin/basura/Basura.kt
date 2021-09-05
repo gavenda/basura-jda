@@ -1,5 +1,6 @@
 package basura
 
+import basura.discord.defaultExceptionHandler
 import basura.discord.useCoroutines
 import basura.graphql.AniList
 import com.zaxxer.hikari.HikariConfig
@@ -7,15 +8,19 @@ import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import net.dv8tion.jda.api.requests.ErrorResponse
 import okhttp3.OkHttpClient
 import org.kodein.di.DI
 import org.kodein.di.bind
 import org.kodein.di.instance
 import org.kodein.di.singleton
 import org.ktorm.database.Database
+import java.net.SocketTimeoutException
 import javax.sql.DataSource
 
-val kodein = DI {
+val basura = DI {
     bind<DataSource>() with singleton {
         val config = HikariConfig()
 
@@ -56,5 +61,22 @@ val kodein = DI {
                 addUserCommand()
                 addClearCommand()
             }
+    }
+}
+
+val basuraExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
+    when(ex) {
+        is SocketTimeoutException -> {
+            event.sendLocalizedMessage(LocaleMessage.TimeoutError)
+        }
+        is ErrorResponseException -> {
+            if (ex.errorResponse == ErrorResponse.UNKNOWN_MESSAGE) {
+                log.debug("Received unknown message error, but is being ignored.")
+            }
+            log.error("An error response was returned", ex)
+        }
+        else -> {
+            defaultExceptionHandler(event, ex)
+        }
     }
 }

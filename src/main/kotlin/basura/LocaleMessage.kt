@@ -13,16 +13,19 @@ object LocaleMessage {
         const val NotLinkedError = "user-account-not-linked"
         const val NotFoundError = "user-not-found-error"
     }
+
     object Link {
         const val ServerOnlyError = "link-server-only-error"
         const val AlreadyLinked = "link-already-linked"
         const val Successful = "link-successful"
     }
+
     object Unlink {
         const val ServerOnlyError = "unlink-server-only-error"
         const val NotLinked = "unlink-not-linked"
         const val Successful = "unlink-successful"
     }
+
     object Find {
         const val NoMatchingMedia = "find-no-matching-media"
         const val NoMatchingCharacter = "find-no-matching-character"
@@ -31,6 +34,7 @@ object LocaleMessage {
     const val DirectMessageCleared = "direct-message-cleared"
     const val DirectMessageOnly = "direct-message-only"
     const val UnknownError = "unknown-error"
+    const val TimeoutError = "timeout-error"
 }
 
 /**
@@ -42,8 +46,8 @@ object Messages {
      * Use user locale.
      */
     fun whenApplicableFor(user: User? = null, guild: Guild? = null): MessageContext {
-        if(user != null) return MessageUserContext(user)
-        if(guild != null) return MessageGuildContext(guild)
+        if (user != null) return MessageUserContext(user)
+        if (guild != null) return MessageGuildContext(guild)
         return MessageDefaultContext()
     }
 }
@@ -72,6 +76,7 @@ class MessageDefaultContext : MessageContext {
  * Messages in a guild context.
  * @param guild the guild to get messages from
  */
+@Suppress("UNUSED_PARAMETER")
 class MessageGuildContext(guild: Guild) : MessageContext {
     private val messages = ResourceBundle.getBundle("i18n.messages", Locale.getDefault())
     override fun get(key: String): String = messages.getString(key)
@@ -82,6 +87,7 @@ class MessageGuildContext(guild: Guild) : MessageContext {
  * Messages in a user context.
  * @param user the user to get messages from
  */
+@Suppress("UNUSED_PARAMETER")
 class MessageUserContext(user: User) : MessageContext {
     private val locale = Locale.getDefault()
     private val messages = ResourceBundle.getBundle("i18n.messages", locale)

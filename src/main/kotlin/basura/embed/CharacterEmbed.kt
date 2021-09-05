@@ -39,7 +39,8 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
                         mangaAppearance.appendIfNotMax(appearance, FIELD_LIMIT)
                     }
                     // Do nothing
-                    else -> {}
+                    else -> {
+                    }
                 }
             }
         }

@@ -87,10 +87,10 @@ fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, p
 
     val mediaDescription = StringBuilder()
 
-    if(media.title?.romaji != null && media.title.english != null) {
+    if (media.title?.romaji != null && media.title.english != null) {
         mediaDescription.append("_(Romaji: ${media.title.romaji})_\n")
     }
-    if(media.title?.native != null) {
+    if (media.title?.native != null) {
         mediaDescription.append("_(Native: ${media.title.native})_\n")
     }
 
