@@ -3,6 +3,7 @@ package basura
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
+import java.util.*
 
 internal const val ABOUT =
     """
@@ -21,7 +22,7 @@ fun JDA.addAboutCommand() {
                 description = ABOUT
                 field {
                     name = "Version"
-                    value = "0.1.0-alpha02"
+                    value = VERSION
                     inline = true
                 }
                 field {
@@ -44,3 +45,9 @@ fun JDA.addAboutCommand() {
             .await()
     }
 }
+
+val VERSION: String
+    get() =
+        Properties().apply {
+            load(object {}.javaClass.getResourceAsStream("/version.properties"))
+        }.getProperty("version")

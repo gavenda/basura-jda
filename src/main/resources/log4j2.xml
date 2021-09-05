@@ -3,19 +3,23 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout disableAnsi="false">
-                <Pattern>%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{}{magenta} %style{%C}{cyan} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%xEx}</Pattern>
+                <Pattern>%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}
+                    %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green,
+                    DEBUG=green bold, TRACE=blue} %style{}{magenta} %style{%C}{cyan} :
+                    %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%xEx}
+                </Pattern>
             </PatternLayout>
         </Console>
         <RollingFile
-            name="Bot"
-            fileName="logs/basura.log"
-            filePattern="logs/$${date:yyyy-MM}/basura-%d{MM-dd-yyyy}-%i.log.gz"
+                name="Bot"
+                fileName="logs/basura.log"
+                filePattern="logs/$${date:yyyy-MM}/basura-%d{MM-dd-yyyy}-%i.log.gz"
         >
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
             <Policies>
-                <TimeBasedTriggeringPolicy />
+                <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
         </RollingFile>
@@ -28,7 +32,7 @@
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
             <Policies>
-                <TimeBasedTriggeringPolicy />
+                <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
         </RollingFile>
@@ -41,7 +45,7 @@
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
             <Policies>
-                <TimeBasedTriggeringPolicy />
+                <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="1 MB"/>
             </Policies>
         </RollingFile>

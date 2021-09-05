@@ -100,7 +100,7 @@ fun JDA.updateBasuraCommands() = updateCommands {
         name = Command.RANKING,
         description = "Shows the current ranking based on given parameters."
     ) {
-        option<Int> (
+        option<Int>(
             name = "amount",
             description = "Number of media to show.",
             required = true

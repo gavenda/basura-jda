@@ -15,6 +15,7 @@ import org.kodein.di.singleton
 import org.ktorm.database.Database
 import javax.sql.DataSource
 
+
 val kodein = DI {
     bind<DataSource>() with singleton {
         val config = HikariConfig()

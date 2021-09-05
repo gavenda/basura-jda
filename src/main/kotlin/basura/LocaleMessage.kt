@@ -13,16 +13,19 @@ object LocaleMessage {
         const val NotLinkedError = "user-account-not-linked"
         const val NotFoundError = "user-not-found-error"
     }
+
     object Link {
         const val ServerOnlyError = "link-server-only-error"
         const val AlreadyLinked = "link-already-linked"
         const val Successful = "link-successful"
     }
+
     object Unlink {
         const val ServerOnlyError = "unlink-server-only-error"
         const val NotLinked = "unlink-not-linked"
         const val Successful = "unlink-successful"
     }
+
     object Find {
         const val NoMatchingMedia = "find-no-matching-media"
         const val NoMatchingCharacter = "find-no-matching-character"
@@ -42,8 +45,8 @@ object Messages {
      * Use user locale.
      */
     fun whenApplicableFor(user: User? = null, guild: Guild? = null): MessageContext {
-        if(user != null) return MessageUserContext(user)
-        if(guild != null) return MessageGuildContext(guild)
+        if (user != null) return MessageUserContext(user)
+        if (guild != null) return MessageGuildContext(guild)
         return MessageDefaultContext()
     }
 }
