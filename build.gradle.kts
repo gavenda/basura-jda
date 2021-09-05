@@ -74,6 +74,7 @@ tasks {
             jvmTarget = "16"
             freeCompilerArgs = listOf(
                 "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xuse-experimental=kotlinx.coroutines.DelicateCoroutinesApi",
                 "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi"
             )
         }

@@ -15,6 +15,9 @@
  */
 package basura.discord
 
+import basura.LocaleMessage
+import basura.log
+import basura.sendLocalizedMessageIfAcknowledged
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
@@ -22,8 +25,10 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.GenericComponentInteractionCreateEvent
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.hooks.SubscribeEvent
+import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.coroutines.resume
 
@@ -87,6 +92,11 @@ inline fun <reified T : GenericEvent> ShardManager.listener(crossinline consumer
     }.also { addEventListener(it) }
 }
 
+val defaultExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
+    log.error("An unknown error occurred", ex)
+    event.sendLocalizedMessageIfAcknowledged(LocaleMessage.UnknownError)
+}
+
 /**
  * Requires [CoroutineEventManager] to be used!
  *
@@ -107,10 +117,15 @@ inline fun <reified T : GenericEvent> ShardManager.listener(crossinline consumer
  */
 inline fun JDA.onCommand(
     name: String,
+    noinline exceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = defaultExceptionHandler,
     crossinline consumer: suspend CoroutineEventListener.(SlashCommandEvent) -> Unit
 ) = listener<SlashCommandEvent> {
-    if (it.name == name)
-        consumer(it)
+    try {
+        if (it.name == name)
+            consumer(it)
+    } catch (ex: Exception) {
+        exceptionHandler(it, ex)
+    }
 }
 
 /**

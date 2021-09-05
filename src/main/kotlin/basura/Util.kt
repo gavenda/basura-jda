@@ -43,6 +43,15 @@ suspend fun SlashCommandEvent.sendLocalizedMessage(key: String) =
     ).await()
 
 /**
+ * Send a localized message.
+ */
+suspend fun SlashCommandEvent.sendLocalizedMessageIfAcknowledged(key: String) {
+    if (hook.interaction.isAcknowledged) {
+        sendLocalizedMessage(key)
+    }
+}
+
+/**
  * Delete the messages in bulk.
  * @param messages messages to delete
  */

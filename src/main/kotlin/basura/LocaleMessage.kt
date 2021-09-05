@@ -34,6 +34,7 @@ object LocaleMessage {
     const val DirectMessageCleared = "direct-message-cleared"
     const val DirectMessageOnly = "direct-message-only"
     const val UnknownError = "unknown-error"
+    const val TimeoutError = "timeout-error"
 }
 
 /**
@@ -75,6 +76,7 @@ class MessageDefaultContext : MessageContext {
  * Messages in a guild context.
  * @param guild the guild to get messages from
  */
+@Suppress("UNUSED_PARAMETER")
 class MessageGuildContext(guild: Guild) : MessageContext {
     private val messages = ResourceBundle.getBundle("i18n.messages", Locale.getDefault())
     override fun get(key: String): String = messages.getString(key)
@@ -85,6 +87,7 @@ class MessageGuildContext(guild: Guild) : MessageContext {
  * Messages in a user context.
  * @param user the user to get messages from
  */
+@Suppress("UNUSED_PARAMETER")
 class MessageUserContext(user: User) : MessageContext {
     private val locale = Locale.getDefault()
     private val messages = ResourceBundle.getBundle("i18n.messages", locale)

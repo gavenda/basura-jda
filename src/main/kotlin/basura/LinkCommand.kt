@@ -14,10 +14,10 @@ import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.removeIf
 
 fun JDA.addLinkCommands() {
-    val db by kodein.instance<Database>()
-    val aniList by kodein.instance<AniList>()
+    val db by basura.instance<Database>()
+    val aniList by basura.instance<AniList>()
 
-    onCommand(Command.LINK) { event ->
+    onCommand(Command.LINK, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
         val guild = event.guild
@@ -29,42 +29,35 @@ fun JDA.addLinkCommands() {
 
         val guildId = guild.idLong
         val username = event.requiredOption("username").asString
-
-        try {
-
-            val existingUser = db.users.firstOrNull {
-                (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
-            }
-
-            if (existingUser != null) {
-                event.sendLocalizedMessage(LocaleMessage.Link.AlreadyLinked)
-                return@onCommand
-            }
-
-            val user = aniList.findUserByName(username)
-
-            if (user == null) {
-                event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
-                return@onCommand
-            }
-
-            db.users.add(
-                User {
-                    aniListId = user.id
-                    aniListUsername = user.name
-                    discordId = event.user.idLong
-                    discordGuildId = guildId
-                }
-            )
-
-            event.sendLocalizedMessage(LocaleMessage.Link.Successful)
-        } catch (e: Exception) {
-            log.error("An error occurred during account linking", e)
-            event.sendUnknownError()
+        val existingUser = db.users.firstOrNull {
+            (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
         }
+
+        if (existingUser != null) {
+            event.sendLocalizedMessage(LocaleMessage.Link.AlreadyLinked)
+            return@onCommand
+        }
+
+        val user = aniList.findUserByName(username)
+
+        if (user == null) {
+            event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
+            return@onCommand
+        }
+
+        db.users.add(
+            User {
+                aniListId = user.id
+                aniListUsername = user.name
+                discordId = event.user.idLong
+                discordGuildId = guildId
+            }
+        )
+
+        event.sendLocalizedMessage(LocaleMessage.Link.Successful)
     }
 
-    onCommand(Command.UNLINK) { event ->
+    onCommand(Command.UNLINK, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
         val guild = event.guild
@@ -75,25 +68,19 @@ fun JDA.addLinkCommands() {
         }
 
         val guildId = guild.idLong
-
-        try {
-            val existingUser = db.users.firstOrNull {
-                (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
-            }
-
-            if (existingUser == null) {
-                event.sendLocalizedMessage(LocaleMessage.Unlink.NotLinked)
-                return@onCommand
-            }
-
-            db.users.removeIf {
-                (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
-            }
-
-            event.sendLocalizedMessage(LocaleMessage.Unlink.Successful)
-        } catch (e: Exception) {
-            log.error("An error occurred during account un-linking", e)
-            event.sendUnknownError()
+        val existingUser = db.users.firstOrNull {
+            (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
         }
+
+        if (existingUser == null) {
+            event.sendLocalizedMessage(LocaleMessage.Unlink.NotLinked)
+            return@onCommand
+        }
+
+        db.users.removeIf {
+            (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        }
+
+        event.sendLocalizedMessage(LocaleMessage.Unlink.Successful)
     }
 }

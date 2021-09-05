@@ -11,8 +11,8 @@ internal const val GUILD_BOGUS_ID = 369435836627812352
 
 @DelicateCoroutinesApi
 fun main() {
-    val jda by kodein.instance<JDA>()
-    val dataSource by kodein.instance<DataSource>()
+    val jda by basura.instance<JDA>()
+    val dataSource by basura.instance<DataSource>()
 
     // Migrate database
     Flyway.configure()
