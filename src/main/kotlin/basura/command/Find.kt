@@ -1,5 +1,6 @@
-package basura
+package basura.command
 
+import basura.*
 import basura.db.users
 import basura.discord.await
 import basura.discord.interaction.sendPaginator

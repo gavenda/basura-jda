@@ -6,9 +6,7 @@ import basura.discord.interaction.option
 import basura.discord.interaction.updateCommands
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
-import kotlinx.coroutines.DelicateCoroutinesApi
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Guild
 
 object Command {
     const val RANKING = "ranking"
@@ -22,6 +20,7 @@ object Command {
     const val CHARACTER = "character"
     const val UNLINK = "unlink"
     const val CLEAR = "clear"
+    const val STAFF = "staff"
 }
 
 fun JDA.updateBasuraCommands() = updateCommands {
@@ -47,21 +46,31 @@ fun JDA.updateBasuraCommands() = updateCommands {
     }
     command(
         name = Command.FIND,
-        description = "Looks up the name of the media."
+        description = "Looks up the name of the anime/manga media."
     ) {
         option<String>(
             name = "query",
-            description = "Name of the media.",
+            description = "Name of the anime/manga media.",
             required = true
         )
     }
     command(
         name = Command.CHARACTER,
-        description = "Looks up the name of a character."
+        description = "Looks up the name of an anime/manga media character."
     ) {
         option<String>(
             name = "query",
-            description = "Name of the character.",
+            description = "Name of the anime/manga media character.",
+            required = true
+        )
+    }
+    command(
+        name = Command.STAFF,
+        description = "Looks up the name of anime/manga media staff."
+    ) {
+        option<String>(
+            name = "query",
+            description = "Name of the staff.",
             required = true
         )
     }
@@ -138,9 +147,4 @@ fun JDA.updateBasuraCommands() = updateCommands {
         name = Command.CLEAR,
         description = "Clear the message history between you and the bot. (only works for direct messages)"
     )
-}
-
-@DelicateCoroutinesApi
-fun Guild.updateBasuraCommands() = updateCommands {
-
 }

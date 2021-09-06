@@ -1,5 +1,7 @@
-package basura
+package basura.command
 
+import basura.Command
+import basura.Embed
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA

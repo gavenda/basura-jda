@@ -1,5 +1,6 @@
 package basura
 
+import basura.command.*
 import basura.discord.defaultExceptionHandler
 import basura.discord.useCoroutines
 import basura.graphql.AniList

@@ -9,3 +9,6 @@ build
 
 # Ignore environment files
 .env
+
+# Ignore debugging log files
+logs

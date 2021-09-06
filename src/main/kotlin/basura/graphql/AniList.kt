@@ -95,9 +95,20 @@ class AniList {
      */
     suspend fun findCharacter(query: String?): List<Character>? {
         val gqlQuery = findResourceAsText("/gql/FindCharacter.graphql")
-        val variables = FindCharacter(query)
-        val result = gqlQuery<FindCharacter, PageResult>(graphUri, gqlQuery, variables)
+        val variables = Find(query)
+        val result = gqlQuery<Find, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.characters
+    }
+
+    /**
+     * Finds an anime/media staff based on query.
+     * @param query the character query
+     */
+    suspend fun findStaff(query: String?): List<Staff>? {
+        val gqlQuery = findResourceAsText("/gql/FindStaff.graphql")
+        val variables = Find(query)
+        val result = gqlQuery<Find, PageResult>(graphUri, gqlQuery, variables)
+        return result.Page?.staff
     }
 
     @Serializable
@@ -106,8 +117,10 @@ class AniList {
     )
 
     @Serializable
-    data class FindCharacter(
-        val query: String? = null
+    data class Find(
+        val query: String? = null,
+        val page: Int = 1,
+        val perPage: Int = 20,
     )
 
     @Serializable
@@ -115,7 +128,7 @@ class AniList {
         val query: String? = null,
         val type: MediaType? = null,
         val page: Int = 1,
-        val perPage: Int = 25,
+        val perPage: Int = 20,
         val sort: List<MediaSort>? = null,
         val formatIn: List<MediaFormat>? = null,
         val season: MediaSeason? = null,
@@ -127,7 +140,7 @@ class AniList {
         val userId: List<Long>?,
         val mediaId: List<Long>?,
         val page: Int = 1,
-        val perPage: Int = 25
+        val perPage: Int = 20
     )
 
     @Serializable

@@ -1,12 +1,13 @@
-package basura
+package basura.command
 
+import basura.*
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 
 fun JDA.addClearCommand() {
-    onCommand(Command.CLEAR) { event ->
+    onCommand(Command.CLEAR, basuraExceptionHandler) { event ->
         event.deferReply()
             .setEphemeral(true)
             .await()
