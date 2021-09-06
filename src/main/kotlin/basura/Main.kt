@@ -5,31 +5,44 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
 import org.flywaydb.core.Flyway
 import org.kodein.di.instance
+import java.net.SocketException
 import javax.sql.DataSource
+import kotlin.system.exitProcess
 
 internal const val GUILD_BOGUS_ID = 369435836627812352
 
 @DelicateCoroutinesApi
 fun main() {
-    val jda by basura.instance<JDA>()
-    val dataSource by basura.instance<DataSource>()
+    try {
+        val jda by basura.instance<JDA>()
+        val dataSource by basura.instance<DataSource>()
 
-    // Migrate database
-    Flyway.configure()
-        .dataSource(dataSource)
-        .load()
-        .migrate()
+        // Migrate database
+        Flyway.configure()
+            .dataSource(dataSource)
+            .load()
+            .migrate()
 
-    // Await and update commands
-    jda.awaitReady()
-    jda.getGuildById(GUILD_BOGUS_ID)
-        ?.updateBasuraCommands()
-        ?.queue()
-    jda.updateBasuraCommands().queue()
+        // Await and update commands
+        jda.awaitReady()
+        jda.getGuildById(GUILD_BOGUS_ID)
+            ?.updateBasuraCommands()
+            ?.queue()
+        jda.updateBasuraCommands().queue()
 
-    jda.presence.activity = Activity.competing("Trash")
+        jda.presence.activity = Activity.competing("Trash")
 
-    Runtime.getRuntime().addShutdownHook(object : Thread() {
-        override fun run() = jda.shutdown()
-    })
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() = jda.shutdown()
+        })
+    } catch (e: SocketException) {
+        // Unable to connect, exit
+        log.error("Cannot connect", e)
+        exitProcess(1)
+    } catch (e: Exception) {
+        // Something went wrong and we do not know
+        log.error("Cannot start", e)
+        exitProcess(-1)
+    }
+
 }
