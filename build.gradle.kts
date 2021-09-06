@@ -64,14 +64,15 @@ dependencies {
     implementation("org.flywaydb:flyway-core:7.14.1") // Migration
 }
 
-tasks {
-    withType<Jar> {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
+java {                                      
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
+tasks {
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "16"
+            jvmTarget = "11"
             freeCompilerArgs = listOf(
                 "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-Xuse-experimental=kotlinx.coroutines.DelicateCoroutinesApi",
