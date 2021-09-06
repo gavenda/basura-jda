@@ -39,7 +39,7 @@ import java.util.*
 const val DEFAULT_DURATION = 300L
 val DEFAULT_PREV = Button.secondary("prev", Emoji.fromUnicode("⬅️"))
 val DEFAULT_NEXT = Button.secondary("next", Emoji.fromUnicode("➡️"))
-val DEFAULT_DELETE = Button.danger("delete", Emoji.fromUnicode("\uD83D\uDEAE"))
+//val DEFAULT_DELETE = Button.danger("delete", Emoji.fromUnicode("\uD83D\uDEAE"))
 
 class Paginator internal constructor(
     private val nonce: String,
@@ -77,13 +77,13 @@ class Paginator internal constructor(
 
     var prev: Button = DEFAULT_PREV
     var next: Button = DEFAULT_NEXT
-    var delete: Button = DEFAULT_DELETE
+//    var delete: Button = DEFAULT_DELETE
 
     internal val controls: ActionRow
         get() = ActionRow.of(
             prev.withId("$nonce:prev"),
             next.withId("$nonce:next"),
-            delete.withId("$nonce:delete")
+//            delete.withId("$nonce:delete")
         )
 
     val pages: List<Message> get() = pageCache.toList()
@@ -117,16 +117,16 @@ class Paginator internal constructor(
                     .setActionRows(controls)
                     .queue(null, ErrorHandler().handle(ErrorResponse.UNKNOWN_MESSAGE) { unregister(event.jda) })
             }
-            "delete" -> {
-                unregister(event.jda)
-                event.deferEdit().queue()
-                if (event.message == null)
-                    event.hook.editOriginal(pageCache[index])
-                        .setActionRows(emptyList())
-                        .queue()
-                else
-                    event.hook.deleteOriginal().queue(null, ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
-            }
+//            "delete" -> {
+//                unregister(event.jda)
+//                event.deferEdit().queue()
+//                if (event.message == null)
+//                    event.hook.editOriginal(pageCache[index])
+//                        .setActionRows(emptyList())
+//                        .queue()
+//                else
+//                    event.hook.deleteOriginal().queue(null, ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
+//            }
         }
     }
 
