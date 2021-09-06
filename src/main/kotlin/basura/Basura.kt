@@ -4,6 +4,7 @@ import basura.command.*
 import basura.discord.defaultExceptionHandler
 import basura.discord.useCoroutines
 import basura.graphql.AniList
+import basura.graphql.AniListGraphQL
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.json.Json
@@ -12,14 +13,18 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
+import okhttp3.Cache
 import okhttp3.OkHttpClient
+import org.apache.logging.log4j.LogManager
 import org.kodein.di.DI
 import org.kodein.di.bind
 import org.kodein.di.instance
 import org.kodein.di.singleton
 import org.ktorm.database.Database
+import java.io.File
 import java.net.SocketTimeoutException
 import javax.sql.DataSource
+
 
 val basura = DI {
     bind<DataSource>() with singleton {
@@ -37,10 +42,15 @@ val basura = DI {
         Database.connect(dataSource)
     }
     bind<OkHttpClient>() with singleton {
-        OkHttpClient()
+        val cacheDir = File("cache")
+        val cacheSize = 5120L
+
+        OkHttpClient.Builder()
+            .cache(Cache(cacheDir, cacheSize))
+            .build()
     }
     bind<AniList>() with singleton {
-        AniList()
+        AniListGraphQL()
     }
     bind<Json>() with singleton {
         Json {
@@ -61,12 +71,15 @@ val basura = DI {
                 addCharacterCommand()
                 addUserCommand()
                 addClearCommand()
+                addStaffCommand()
             }
     }
 }
 
 val basuraExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
-    when(ex) {
+    val log = LogManager.getLogger("ExceptionHandler")
+
+    when (ex) {
         is SocketTimeoutException -> {
             event.sendLocalizedMessage(LocaleMessage.TimeoutError)
         }

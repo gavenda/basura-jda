@@ -7,6 +7,7 @@ import basura.discord.onCommand
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
+import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -14,13 +15,16 @@ import org.ktorm.dsl.eq
 import org.ktorm.entity.firstOrNull
 
 fun JDA.addUserCommand() {
+    val log = LogManager.getLogger("User")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.USER, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
-        val usernameOpt = event.getOption("username")?.asString
+        val usernameOpt = event.getOption("username")?.asString?.apply {
+            log.debug("Looking up user: $this")
+        }
         val guild = event.guild
         // Assure not direct message
         if (guild == null && usernameOpt == null) {
@@ -48,8 +52,6 @@ fun JDA.addUserCommand() {
             event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
             return@onCommand
         }
-
-        log.debug("Creating media embed...")
 
         val embed = generateUserEmbed(user)
         event.hook

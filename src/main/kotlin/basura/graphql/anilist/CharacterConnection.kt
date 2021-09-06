@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CharacterConnection(
-    val nodes: List<Character?>?,
-    val edges: List<CharacterEdge?>?
+    val nodes: List<Character?>? = null,
+    val edges: List<CharacterEdge?>? = null
 )

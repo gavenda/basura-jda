@@ -6,6 +6,7 @@ import basura.db.users
 import basura.discord.onCommand
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
+import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -15,6 +16,7 @@ import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.removeIf
 
 fun JDA.addLinkCommands() {
+    val log = LogManager.getLogger("Link")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
 
@@ -29,7 +31,9 @@ fun JDA.addLinkCommands() {
         }
 
         val guildId = guild.idLong
-        val username = event.requiredOption("username").asString
+        val username = event.requiredOption("username").asString.apply {
+            log.debug("Linking AniList user [ $this ] to Discord [ user = ${event.user.name}, guild = ${guild.name} ]")
+        }
         val existingUser = db.users.firstOrNull {
             (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
         }
@@ -77,6 +81,8 @@ fun JDA.addLinkCommands() {
             event.sendLocalizedMessage(LocaleMessage.Unlink.NotLinked)
             return@onCommand
         }
+
+        log.debug("Unlinking AniList user [ ${existingUser.aniListUsername} ] from Discord [ user = ${event.user.name}, guild = ${guild.name} ]")
 
         db.users.removeIf {
             (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)

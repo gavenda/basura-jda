@@ -10,7 +10,7 @@ data class Media(
     /**
      * The id of the media
      */
-    val id: Long,
+    val id: Long = 0,
     /**
      * The mal id of the media
      */

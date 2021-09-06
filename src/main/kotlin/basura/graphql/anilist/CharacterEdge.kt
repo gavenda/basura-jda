@@ -10,5 +10,5 @@ data class CharacterEdge(
     /**
      * The characters role in the media
      */
-    val role: CharacterRole?
+    val role: CharacterRole? = null
 )

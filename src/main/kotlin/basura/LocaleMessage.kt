@@ -29,6 +29,7 @@ object LocaleMessage {
     object Find {
         const val NoMatchingMedia = "find-no-matching-media"
         const val NoMatchingCharacter = "find-no-matching-character"
+        const val NoMatchingStaff = "find-no-matching-staff"
     }
 
     const val DirectMessageCleared = "direct-message-cleared"

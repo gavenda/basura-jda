@@ -10,13 +10,13 @@ data class CharacterName(
     /**
      * The character's first and last name
      */
-    val full: String?,
+    val full: String? = null,
     /**
      * The character's full name in their native language
      */
-    val native: String?,
+    val native: String? = null,
     /**
      * Other names the character might be referred to as
      */
-    val alternative: List<String?>?
+    val alternative: List<String?>? = null
 )

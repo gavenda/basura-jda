@@ -52,4 +52,4 @@ val VERSION: String
     get() =
         Properties().apply {
             load(object {}.javaClass.getResourceAsStream("/version.properties"))
-        }.getProperty("version")
+        }.getProperty("version") ?: "-"

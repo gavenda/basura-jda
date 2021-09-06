@@ -12,3 +12,6 @@ build
 
 # Ignore debugging log files
 logs
+
+# Ignore cache
+cache

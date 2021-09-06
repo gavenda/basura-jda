@@ -10,13 +10,13 @@ data class MediaTitle(
     /**
      * The official english title
      */
-    val english: String?,
+    val english: String? = null,
     /**
      * The romanization of the native language title
      */
-    val romaji: String?,
+    val romaji: String? = null,
     /**
      * Official title in it's native language
      */
-    val native: String?
+    val native: String? = null
 )

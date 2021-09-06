@@ -16,7 +16,7 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
     }
     val animeAppearance = StringBuilder()
     val mangaAppearance = StringBuilder()
-    val alternateNames = StringBuilder()
+    val aliases = StringBuilder()
 
     val mediaNodes = character.media?.nodes
     val mediaEdges = character.media?.edges
@@ -49,9 +49,10 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
     // Weirdly enough, duplicate names exists.
     character.name?.alternative
         ?.filterNotNull()
+        ?.filter { it.isNotEmpty() }
         ?.distinctBy { it }
         ?.forEach {
-            alternateNames.appendIfNotMax("- ${it.trimEnd()}\n", FIELD_LIMIT)
+            aliases.appendIfNotMax("- ${it.trimEnd()}\n", FIELD_LIMIT)
         }
 
     // Remove spoilers, fix new lines, clean up html bullshit
@@ -61,6 +62,7 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
         .aniClean()
         .weirdHtmlClean()
         .abbreviate(DESCRIPTION_LIMIT)
+        .dropLastWhile { it != '\n' }
 
     return Embed {
         title = characterTitle.toString()
@@ -72,7 +74,10 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
         if (animeAppearance.isNotEmpty()) {
             field {
                 name = "Anime Appearances"
-                value = animeAppearance.toString()
+                value = animeAppearance
+                    .toString()
+                    .abbreviate(FIELD_LIMIT)
+                    .dropLastWhile { it != '\n' }
                 inline = false
             }
         }
@@ -80,23 +85,22 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
         if (mangaAppearance.isNotEmpty()) {
             field {
                 name = "Manga Appearances"
-                value = mangaAppearance.toString()
+                value = mangaAppearance
+                    .toString()
+                    .abbreviate(FIELD_LIMIT)
+                    .dropLastWhile { it != '\n' }
                 inline = false
             }
         }
 
-        if (alternateNames.isNotEmpty()) {
+        if (aliases.isNotEmpty()) {
             field {
-                name = "Alternate Names"
-                value = alternateNames.toString()
+                name = "Aliases"
+                value = aliases
+                    .toString()
+                    .abbreviate(FIELD_LIMIT)
                 inline = false
             }
-        }
-
-        field {
-            name = "AniList ID"
-            value = character.id.toString()
-            inline = true
         }
 
         field {

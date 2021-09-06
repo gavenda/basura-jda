@@ -10,6 +10,7 @@ import basura.graphql.AniList
 import basura.graphql.anilist.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -17,12 +18,15 @@ import org.ktorm.entity.filter
 import org.ktorm.entity.map
 
 fun JDA.addFindCommands() {
+    val log = LogManager.getLogger("Find")
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.FIND, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
-        val query = event.requiredOption("query").asString
+        val query = event.requiredOption("query").asString.apply {
+            log.debug("Looking up anime/manga media: $this")
+        }
         val media = aniList.findMedia(query)
 
         if (media == null) {
@@ -37,7 +41,9 @@ fun JDA.addFindCommands() {
     onCommand(Command.ANIME, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
-        val query = event.requiredOption("query").asString
+        val query = event.requiredOption("query").asString.apply {
+            log.debug("Looking up anime media: $this")
+        }
         val media = aniList.findMediaByType(query, MediaType.ANIME)
 
         if (media == null) {
@@ -52,7 +58,9 @@ fun JDA.addFindCommands() {
     onCommand(Command.MANGA, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
 
-        val query = event.requiredOption("query").asString
+        val query = event.requiredOption("query").asString.apply {
+            log.debug("Looking up manga media: $this")
+        }
         val media = aniList.findMediaByType(query, MediaType.MANGA)
 
         if (media == null) {
@@ -71,6 +79,8 @@ fun JDA.addFindCommands() {
         val format = event.getOption("format")?.asString
         val season = event.getOption("season")?.asString
         val seasonYear = event.getOption("year")?.asLong?.toInt()
+
+        log.debug("Looking up rankings: [ amount = $amount, format = $format, season = $season, seasonYear = $seasonYear ] ")
 
         val mediaSeason = season?.let { MediaSeason.valueOf(it) }
         val mediaFormat = format?.let { MediaFormat.valueOf(it) } ?: MediaFormat.TV

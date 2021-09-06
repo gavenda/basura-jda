@@ -3,16 +3,17 @@ package basura
 import kotlinx.coroutines.DelicateCoroutinesApi
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
+import org.apache.logging.log4j.LogManager
 import org.flywaydb.core.Flyway
 import org.kodein.di.instance
 import java.net.SocketException
 import javax.sql.DataSource
 import kotlin.system.exitProcess
 
-internal const val GUILD_BOGUS_ID = 369435836627812352
-
 @DelicateCoroutinesApi
 fun main() {
+    val log = LogManager.getLogger("Main")
+
     try {
         val jda by basura.instance<JDA>()
         val dataSource by basura.instance<DataSource>()
@@ -25,9 +26,6 @@ fun main() {
 
         // Await and update commands
         jda.awaitReady()
-        jda.getGuildById(GUILD_BOGUS_ID)
-            ?.updateBasuraCommands()
-            ?.queue()
         jda.updateBasuraCommands().queue()
 
         jda.presence.activity = Activity.competing("Trash")

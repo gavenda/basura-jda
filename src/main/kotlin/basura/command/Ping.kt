@@ -5,11 +5,19 @@ import basura.basuraExceptionHandler
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
+import org.apache.logging.log4j.LogManager
 
 fun JDA.addPingCommand() {
+    val log = LogManager.getLogger("Ping")
+
     onCommand(Command.PING, basuraExceptionHandler) { event ->
-        event.replyFormat("%d ms", event.jda.gatewayPing)
+        val ping = event.jda.gatewayPing
+
+        log.debug("Ping request received, ping: $ping")
+
+        event.replyFormat("%d ms", ping)
             .setEphemeral(true)
             .await()
     }
+
 }

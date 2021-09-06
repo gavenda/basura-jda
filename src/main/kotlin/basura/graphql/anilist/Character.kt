@@ -10,15 +10,15 @@ data class Character(
     /**
      * The id of the character
      */
-    val id: Long,
+    val id: Long = 0,
     /**
      * The names of the character
      */
-    val name: CharacterName?,
+    val name: CharacterName? = null,
     /**
      * Character images
      */
-    val image: CharacterImage?,
+    val image: CharacterImage? = null,
     /**
      * A general description of the character
      */
@@ -26,13 +26,13 @@ data class Character(
     /**
      * The url for the character page on the AniList website
      */
-    val siteUrl: String?,
+    val siteUrl: String = "",
     /**
      * Media that includes the character
      */
-    val media: MediaConnection?,
+    val media: MediaConnection? = null,
     /**
      * The amount of user's who have favourited the character
      */
-    val favourites: Int?
+    val favourites: Int = 0
 )
