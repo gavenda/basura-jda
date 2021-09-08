@@ -15,12 +15,18 @@ Trash includes isekai bullshit, power leveling xianxia, wuxia, otome politics,
 and any that heightens your level of retardedness.
 """
 
-fun JDA.addAboutCommand() {
+fun JDA.handleAbout(): JDA {
+    val java = System.getProperty("java.vendor")
+    val javaVersion = System.getProperty("java.version")
+    val sys = System.getProperty("os.name")
+    val sysArch = System.getProperty("os.arch")
+    val sysVersion = System.getProperty("os.version")
+
     onCommand(Command.ABOUT) { event ->
         event.replyEmbeds(
             Embed {
                 title = "What is Basura?"
-                url = "https://gavenda.work"
+                url = "https://github.com/gavenda/basura"
                 description = ABOUT
                 field {
                     name = "Version"
@@ -37,6 +43,11 @@ fun JDA.addAboutCommand() {
                     value = "[JDA](https://github.com/DV8FromTheWorld/JDA)"
                     inline = true
                 }
+                field {
+                    name = "Operating System"
+                    value = "$java Java $javaVersion on $sys $sysVersion ($sysArch)"
+                    inline = false
+                }
                 footer {
                     name = "You can help with the development by dropping by on GitHub."
                     iconUrl = "https://github.com/fluidicon.png"
@@ -46,6 +57,8 @@ fun JDA.addAboutCommand() {
             .setEphemeral(true)
             .await()
     }
+
+    return this
 }
 
 val VERSION: String

@@ -25,7 +25,6 @@ import java.io.File
 import java.net.SocketTimeoutException
 import javax.sql.DataSource
 
-
 val basura = DI {
     bind<DataSource>() with singleton {
         val config = HikariConfig()
@@ -43,7 +42,7 @@ val basura = DI {
     }
     bind<OkHttpClient>() with singleton {
         val cacheDir = File("cache")
-        val cacheSize = 5120L
+        val cacheSize: Long = (1024 * 1024) * 5 // 5MB cache
 
         OkHttpClient.Builder()
             .cache(Cache(cacheDir, cacheSize))
@@ -63,16 +62,14 @@ val basura = DI {
         JDABuilder.createLight(Environment.BOT_TOKEN)
             .useCoroutines()
             .build()
-            .apply {
-                addFindCommands()
-                addLinkCommands()
-                addPingCommand()
-                addAboutCommand()
-                addCharacterCommand()
-                addUserCommand()
-                addClearCommand()
-                addStaffCommand()
-            }
+            .handleFind()
+            .handleLink()
+            .handlePing()
+            .handleAbout()
+            .handleCharacter()
+            .handleUser()
+            .handleClear()
+            .handleStaff()
     }
 }
 

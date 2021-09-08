@@ -7,7 +7,7 @@ import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
 import org.apache.logging.log4j.LogManager
 
-fun JDA.addPingCommand() {
+fun JDA.handlePing(): JDA {
     val log = LogManager.getLogger("Ping")
 
     onCommand(Command.PING, basuraExceptionHandler) { event ->
@@ -20,4 +20,5 @@ fun JDA.addPingCommand() {
             .await()
     }
 
+    return this
 }

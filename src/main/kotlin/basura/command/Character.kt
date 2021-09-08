@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.JDA
 import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 
-fun JDA.addCharacterCommand() {
+fun JDA.handleCharacter(): JDA {
     val log = LogManager.getLogger("Character")
     val aniList by basura.instance<AniList>()
 
@@ -38,4 +38,6 @@ fun JDA.addCharacterCommand() {
 
         event.hook.sendPaginator(*embeds).await()
     }
+
+    return this
 }

@@ -14,7 +14,7 @@ import org.ktorm.dsl.and
 import org.ktorm.dsl.eq
 import org.ktorm.entity.firstOrNull
 
-fun JDA.addUserCommand() {
+fun JDA.handleUser(): JDA {
     val log = LogManager.getLogger("User")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
@@ -59,4 +59,6 @@ fun JDA.addUserCommand() {
             .await()
 
     }
+
+    return this
 }

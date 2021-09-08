@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 import org.apache.logging.log4j.LogManager
 
-fun JDA.addClearCommand() {
+fun JDA.handleClear(): JDA {
     val log = LogManager.getLogger("Clear")
 
     onCommand(Command.CLEAR, basuraExceptionHandler) { event ->
@@ -35,5 +35,7 @@ fun JDA.addClearCommand() {
 
         event.sendLocalizedMessage(LocaleMessage.DirectMessageCleared)
     }
+
+    return this
 }
 

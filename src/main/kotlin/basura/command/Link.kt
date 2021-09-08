@@ -15,7 +15,7 @@ import org.ktorm.entity.add
 import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.removeIf
 
-fun JDA.addLinkCommands() {
+fun JDA.handleLink(): JDA {
     val log = LogManager.getLogger("Link")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
@@ -90,4 +90,6 @@ fun JDA.addLinkCommands() {
 
         event.sendLocalizedMessage(LocaleMessage.Unlink.Successful)
     }
+
+    return this
 }

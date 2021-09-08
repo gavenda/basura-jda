@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.JDA
 import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 
-fun JDA.addStaffCommand() {
+fun JDA.handleStaff(): JDA {
     val log = LogManager.getLogger("Staff")
     val aniList by basura.instance<AniList>()
 
@@ -23,7 +23,7 @@ fun JDA.addStaffCommand() {
         val characters = aniList.findStaff(query)
 
         if (characters == null) {
-            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingStaff)
             return@onCommand
         }
 
@@ -32,10 +32,12 @@ fun JDA.addStaffCommand() {
         }.toTypedArray()
 
         if(embeds.isEmpty()) {
-            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingStaff)
             return@onCommand
         }
 
         event.hook.sendPaginator(*embeds).await()
     }
+
+    return this
 }

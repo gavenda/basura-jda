@@ -17,7 +17,7 @@ import org.ktorm.dsl.eq
 import org.ktorm.entity.filter
 import org.ktorm.entity.map
 
-fun JDA.addFindCommands() {
+fun JDA.handleFind(): JDA {
     val log = LogManager.getLogger("Find")
     val aniList by basura.instance<AniList>()
 
@@ -102,6 +102,8 @@ fun JDA.addFindCommands() {
 
         event.sendMediaResults(media, mediaList)
     }
+
+    return this
 }
 
 internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<MediaList>? {
@@ -116,10 +118,15 @@ internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List
     )
 }
 
-suspend fun SlashCommandEvent.sendMediaResults(media: List<Media>, mediaList: List<MediaList>?) {
+internal suspend fun SlashCommandEvent.sendMediaResults(media: List<Media>, mediaList: List<MediaList>?) {
     val embeds = media.mapIndexed { i, m ->
         generateMediaEmbed(m, mediaList, (i + 1), media.size)
     }.toTypedArray()
+
+    if(embeds.isEmpty()) {
+        sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
+        return
+    }
 
     hook.sendPaginator(*embeds).await()
 }
