@@ -3,7 +3,6 @@ package basura
 import kotlinx.coroutines.DelicateCoroutinesApi
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Activity
-import org.apache.logging.log4j.LogManager
 import org.flywaydb.core.Flyway
 import org.kodein.di.instance
 import java.net.SocketException
@@ -12,7 +11,7 @@ import kotlin.system.exitProcess
 
 @DelicateCoroutinesApi
 fun main() {
-    val log = LogManager.getLogger("basura.Main")
+    val log by Log4j2("Main")
 
     try {
         val jda by basura.instance<JDA>()
