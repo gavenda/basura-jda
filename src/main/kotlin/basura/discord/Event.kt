@@ -16,6 +16,7 @@
 package basura.discord
 
 import basura.LocaleMessage
+import basura.Log4j2
 import basura.sendLocalizedMessageIfAcknowledged
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
@@ -27,7 +28,6 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.hooks.SubscribeEvent
 import net.dv8tion.jda.api.sharding.ShardManager
-import org.apache.logging.log4j.LogManager
 import kotlin.coroutines.resume
 
 /**
@@ -91,7 +91,7 @@ inline fun <reified T : GenericEvent> ShardManager.listener(crossinline consumer
 }
 
 val defaultExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
-    val log = LogManager.getLogger("DefaultExceptionHandler")
+    val log by Log4j2("DefaultExceptionHandler")
     log.error("An unknown error occurred", ex)
     event.sendLocalizedMessageIfAcknowledged(LocaleMessage.UnknownError)
 }

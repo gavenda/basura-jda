@@ -1,14 +1,14 @@
 package basura.command
 
 import basura.Command
+import basura.Log4j2
 import basura.basuraExceptionHandler
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
-import org.apache.logging.log4j.LogManager
 
 fun JDA.handlePing(): JDA {
-    val log = LogManager.getLogger("Ping")
+    val log by Log4j2("Ping")
 
     onCommand(Command.PING, basuraExceptionHandler) { event ->
         val ping = event.jda.gatewayPing

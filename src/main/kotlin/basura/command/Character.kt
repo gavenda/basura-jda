@@ -7,11 +7,10 @@ import basura.discord.onCommand
 import basura.embed.generateCharacterEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 
 fun JDA.handleCharacter(): JDA {
-    val log = LogManager.getLogger("Character")
+    val log by Log4j2("Character")
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.CHARACTER, basuraExceptionHandler) { event ->
@@ -31,7 +30,7 @@ fun JDA.handleCharacter(): JDA {
             generateCharacterEmbed(c, (i + 1), characters.size)
         }.toTypedArray()
 
-        if(embeds.isEmpty()) {
+        if (embeds.isEmpty()) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
             return@onCommand
         }

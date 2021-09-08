@@ -7,11 +7,10 @@ import basura.discord.onCommand
 import basura.embed.generateStaffEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 
 fun JDA.handleStaff(): JDA {
-    val log = LogManager.getLogger("Staff")
+    val log by Log4j2("Staff")
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.STAFF, basuraExceptionHandler) { event ->
@@ -31,7 +30,7 @@ fun JDA.handleStaff(): JDA {
             generateStaffEmbed(c, (i + 1), characters.size)
         }.toTypedArray()
 
-        if(embeds.isEmpty()) {
+        if (embeds.isEmpty()) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingStaff)
             return@onCommand
         }

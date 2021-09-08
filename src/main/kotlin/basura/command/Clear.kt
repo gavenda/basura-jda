@@ -5,10 +5,9 @@ import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
-import org.apache.logging.log4j.LogManager
 
 fun JDA.handleClear(): JDA {
-    val log = LogManager.getLogger("Clear")
+    val log by Log4j2("Clear")
 
     onCommand(Command.CLEAR, basuraExceptionHandler) { event ->
         event.deferReply()

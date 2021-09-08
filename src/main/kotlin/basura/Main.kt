@@ -12,7 +12,7 @@ import kotlin.system.exitProcess
 
 @DelicateCoroutinesApi
 fun main() {
-    val log = LogManager.getLogger("Main")
+    val log = LogManager.getLogger("basura.Main")
 
     try {
         val jda by basura.instance<JDA>()

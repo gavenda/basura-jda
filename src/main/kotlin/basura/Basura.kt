@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import okhttp3.Cache
 import okhttp3.OkHttpClient
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.DI
 import org.kodein.di.bind
 import org.kodein.di.instance
@@ -74,7 +73,7 @@ val basura = DI {
 }
 
 val basuraExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
-    val log = LogManager.getLogger("ExceptionHandler")
+    val log by Log4j2("ExceptionHandler")
 
     when (ex) {
         is SocketTimeoutException -> {

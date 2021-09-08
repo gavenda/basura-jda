@@ -10,7 +10,6 @@ import basura.graphql.AniList
 import basura.graphql.anilist.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -18,7 +17,7 @@ import org.ktorm.entity.filter
 import org.ktorm.entity.map
 
 fun JDA.handleFind(): JDA {
-    val log = LogManager.getLogger("Find")
+    val log by Log4j2("Find")
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.FIND, basuraExceptionHandler) { event ->
@@ -123,7 +122,7 @@ internal suspend fun SlashCommandEvent.sendMediaResults(media: List<Media>, medi
         generateMediaEmbed(m, mediaList, (i + 1), media.size)
     }.toTypedArray()
 
-    if(embeds.isEmpty()) {
+    if (embeds.isEmpty()) {
         sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
         return
     }

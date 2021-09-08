@@ -6,7 +6,6 @@ import basura.db.users
 import basura.discord.onCommand
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -16,7 +15,7 @@ import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.removeIf
 
 fun JDA.handleLink(): JDA {
-    val log = LogManager.getLogger("Link")
+    val log by Log4j2("Link")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
 

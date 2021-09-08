@@ -7,7 +7,6 @@ import basura.discord.onCommand
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.JDA
-import org.apache.logging.log4j.LogManager
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -15,7 +14,7 @@ import org.ktorm.dsl.eq
 import org.ktorm.entity.firstOrNull
 
 fun JDA.handleUser(): JDA {
-    val log = LogManager.getLogger("User")
+    val log by Log4j2("User")
     val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
 
