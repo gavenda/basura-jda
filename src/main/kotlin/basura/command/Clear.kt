@@ -10,9 +10,7 @@ fun JDA.handleClear(): JDA {
     val log by Log4j2("Clear")
 
     onCommand(Command.CLEAR, basuraExceptionHandler) { event ->
-        event.deferReply()
-            .setEphemeral(true)
-            .await()
+        event.awaitDeferReply(true)
 
         val guild = event.guild
         // Assure direct message

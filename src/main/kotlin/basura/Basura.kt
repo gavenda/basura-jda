@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
+import net.dv8tion.jda.api.requests.GatewayIntent
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import org.kodein.di.DI
@@ -59,6 +60,9 @@ val basura = DI {
     }
     bind<JDA>() with singleton {
         JDABuilder.createLight(Environment.BOT_TOKEN)
+            .enableIntents(
+                GatewayIntent.GUILD_MEMBERS
+            )
             .useCoroutines()
             .build()
             .handleGuildEvents()
