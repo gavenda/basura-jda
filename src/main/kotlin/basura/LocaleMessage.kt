@@ -34,8 +34,10 @@ object LocaleMessage {
 
     const val DirectMessageCleared = "direct-message-cleared"
     const val DirectMessageOnly = "direct-message-only"
+    const val ServerOnlyError = "server-only-error"
     const val UnknownError = "unknown-error"
     const val TimeoutError = "timeout-error"
+    const val SettingUpdated = "setting-updated"
 }
 
 /**

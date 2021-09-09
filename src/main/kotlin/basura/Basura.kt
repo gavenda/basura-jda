@@ -61,6 +61,7 @@ val basura = DI {
         JDABuilder.createLight(Environment.BOT_TOKEN)
             .useCoroutines()
             .build()
+            .handleGuildEvents()
             .handleFind()
             .handleLink()
             .handlePing()
@@ -69,6 +70,7 @@ val basura = DI {
             .handleUser()
             .handleClear()
             .handleStaff()
+            .handleSetting()
     }
 }
 

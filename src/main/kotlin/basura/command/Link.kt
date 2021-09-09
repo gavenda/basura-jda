@@ -25,7 +25,7 @@ fun JDA.handleLink(): JDA {
         val guild = event.guild
         // Assure not direct message
         if (guild == null) {
-            event.sendLocalizedMessage(LocaleMessage.Link.ServerOnlyError)
+            event.sendLocalizedMessage(LocaleMessage.Link.ServerOnlyError, true)
             return@onCommand
         }
 
@@ -67,7 +67,7 @@ fun JDA.handleLink(): JDA {
         val guild = event.guild
         // Assure not direct message
         if (guild == null) {
-            event.sendLocalizedMessage(LocaleMessage.Unlink.ServerOnlyError)
+            event.sendLocalizedMessage(LocaleMessage.Unlink.ServerOnlyError, true)
             return@onCommand
         }
 

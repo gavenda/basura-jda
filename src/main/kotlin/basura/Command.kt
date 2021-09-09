@@ -1,9 +1,6 @@
 package basura
 
-import basura.discord.interaction.choice
-import basura.discord.interaction.command
-import basura.discord.interaction.option
-import basura.discord.interaction.updateCommands
+import basura.discord.interaction.*
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
 import net.dv8tion.jda.api.JDA
@@ -21,6 +18,13 @@ object Command {
     const val UNLINK = "unlink"
     const val CLEAR = "clear"
     const val STAFF = "staff"
+    const val SETTING = "setting"
+
+    object Setting {
+        const val CURRENT = "current"
+        const val HENTAI = "hentai"
+        const val LANGUAGE = "language"
+    }
 }
 
 fun JDA.updateBasuraCommands() = updateCommands {
@@ -147,4 +151,26 @@ fun JDA.updateBasuraCommands() = updateCommands {
         name = Command.CLEAR,
         description = "Clear the message history between you and the bot. (only works for direct messages)"
     )
+    command(
+        name = Command.SETTING,
+        description = "Setting for the current guild. (does not work for direct messages)"
+    ) {
+        subcommand(Command.Setting.CURRENT, "The current overall settings for this guild.")
+        subcommand(Command.Setting.LANGUAGE, "The current language for this guild.") {
+            option<String>(
+                name = "language",
+                description = "The language to use.",
+                required = true
+            ) {
+                choice("English", "en-US")
+            }
+        }
+        subcommand(Command.Setting.HENTAI, "Allow hentai content for this guild.") {
+            option<Boolean> (
+                name = "display",
+                description = "Display hentai or not.",
+                required = true
+            )
+        }
+    }
 }

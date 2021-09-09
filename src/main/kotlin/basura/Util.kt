@@ -31,16 +31,20 @@ suspend fun SlashCommandEvent.sendUnknownError() = sendLocalizedMessage(LocaleMe
 /**
  * Defer for a reply.
  */
-suspend fun SlashCommandEvent.awaitDeferReply() = deferReply().await()
+suspend fun SlashCommandEvent.awaitDeferReply(ephemeral: Boolean = false) = deferReply()
+    .setEphemeral(ephemeral)
+    .await()
 
 /**
  * Send a localized message.
  */
-suspend fun SlashCommandEvent.sendLocalizedMessage(key: String) =
+suspend fun SlashCommandEvent.sendLocalizedMessage(key: String, ephemeral: Boolean = false) =
     hook.sendMessage(
         Messages.whenApplicableFor(user, guild)
             .get(key)
-    ).await()
+    )
+        .setEphemeral(ephemeral)
+        .await()
 
 /**
  * Send a localized message.
@@ -64,6 +68,11 @@ suspend fun PrivateChannel.deleteMessages(messages: List<Message>) {
     sortedMessageIds.forEach {
         deleteMessageById(it).await()
     }
+}
+
+fun Boolean.toYesNo(): String {
+    if(this) return "Yes"
+    return "No"
 }
 
 /**

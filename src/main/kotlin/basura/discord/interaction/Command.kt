@@ -104,12 +104,12 @@ inline fun Guild.upsertCommand(name: String, description: String, builder: Comma
 inline fun Command.editCommand(builder: CommandData.() -> Unit) =
     editCommand().apply(CommandData(name, description).apply(builder))
 
-inline fun <reified T> optionType() = when (T::class.java) {
-    Integer::class.java, java.lang.Long::class.java, java.lang.Short::class.java, java.lang.Byte::class.java -> OptionType.INTEGER
-    String::class.java -> OptionType.STRING
-    User::class.java -> OptionType.USER
-    Role::class.java -> OptionType.ROLE
-    Boolean::class.java -> OptionType.BOOLEAN
+inline fun <reified T> optionType() = when (T::class) {
+    Integer::class, Long::class, Short::class, Byte::class -> OptionType.INTEGER
+    String::class -> OptionType.STRING
+    User::class -> OptionType.USER
+    Role::class -> OptionType.ROLE
+    Boolean::class -> OptionType.BOOLEAN
     else -> when {
         AbstractChannel::class.java.isAssignableFrom(T::class.java) -> OptionType.CHANNEL
         IMentionable::class.java.isAssignableFrom(T::class.java) -> OptionType.MENTIONABLE

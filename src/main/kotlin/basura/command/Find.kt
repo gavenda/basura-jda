@@ -1,6 +1,7 @@
 package basura.command
 
 import basura.*
+import basura.db.guilds
 import basura.db.users
 import basura.discord.await
 import basura.discord.interaction.sendPaginator
@@ -14,10 +15,21 @@ import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
 import org.ktorm.entity.filter
+import org.ktorm.entity.first
 import org.ktorm.entity.map
+
+internal fun List<Media>.filterHentai(allowHentai: Boolean): List<Media> {
+    if (allowHentai) return this
+    return filter {
+        it.genres.containsAll(
+            listOf("Hentai", "Yuri", "Yaoi")
+        )
+    }
+}
 
 fun JDA.handleFind(): JDA {
     val log by Log4j2("Find")
+    val db by basura.instance<Database>()
     val aniList by basura.instance<AniList>()
 
     onCommand(Command.FIND, basuraExceptionHandler) { event ->
@@ -26,7 +38,12 @@ fun JDA.handleFind(): JDA {
         val query = event.requiredOption("query").asString.apply {
             log.debug("Looking up anime/manga media: $this")
         }
+        val guild = event.guild
+        val allowHentai = if (guild != null) {
+            db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
+        } else false
         val media = aniList.findMedia(query)
+            ?.filterHentai(allowHentai)
 
         if (media == null) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
@@ -43,7 +60,12 @@ fun JDA.handleFind(): JDA {
         val query = event.requiredOption("query").asString.apply {
             log.debug("Looking up anime media: $this")
         }
+        val guild = event.guild
+        val allowHentai = if (guild != null) {
+            db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
+        } else false
         val media = aniList.findMediaByType(query, MediaType.ANIME)
+            ?.filterHentai(allowHentai)
 
         if (media == null) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
@@ -60,7 +82,12 @@ fun JDA.handleFind(): JDA {
         val query = event.requiredOption("query").asString.apply {
             log.debug("Looking up manga media: $this")
         }
+        val guild = event.guild
+        val allowHentai = if (guild != null) {
+            db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
+        } else false
         val media = aniList.findMediaByType(query, MediaType.MANGA)
+            ?.filterHentai(allowHentai)
 
         if (media == null) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
@@ -85,12 +112,16 @@ fun JDA.handleFind(): JDA {
         val mediaFormat = format?.let { MediaFormat.valueOf(it) } ?: MediaFormat.TV
 
         val formats = listOf(mediaFormat)
+        val guild = event.guild
+        val allowHentai = if (guild != null) {
+            db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
+        } else false
         val media = aniList.findMediaByRanking(
             amount = amount,
             formatIn = formats,
             season = mediaSeason,
             seasonYear = seasonYear
-        )
+        )?.filterHentai(allowHentai)
 
         if (media == null) {
             event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
