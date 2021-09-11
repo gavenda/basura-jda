@@ -7,7 +7,13 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 /**
  * Generates an embed given the media and a user's media list.
  */
-fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, pageTotal: Int): MessageEmbed {
+fun generateMediaEmbed(
+    media: Media,
+    mediaList: List<MediaList>?,
+    aniToDiscordName: Map<Long, String?>,
+    pageNo: Int,
+    pageTotal: Int
+): MessageEmbed {
     val season = if (media.season != MediaSeason.UNKNOWN) media.season.displayName else "-"
     val seasonYear = if (media.seasonYear != 0) media.seasonYear else "-"
     val score = media.meanScore.toStars()
@@ -33,7 +39,7 @@ fun generateMediaEmbed(media: Media, mediaList: List<MediaList>?, pageNo: Int, p
             .filter { it.mediaId == media.id }
             .map { ml ->
                 EmbedMedia(
-                    discordName = ml.user?.name,
+                    discordName = aniToDiscordName[ml.user?.id],
                     status = ml.status,
                     score = ml.score,
                     progress = ml.progress

@@ -10,6 +10,7 @@ import basura.embed.generateMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.*
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -51,8 +52,9 @@ fun JDA.handleFind(): JDA {
         }
 
         val mediaList = lookupMediaList(media, event.guild?.idLong)
+        val aniToDiscordName = aniListToDiscordNameMap(guild)
 
-        event.sendMediaResults(media, mediaList)
+        event.sendMediaResults(media, mediaList, aniToDiscordName)
     }
     onCommand(Command.ANIME, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
@@ -73,8 +75,9 @@ fun JDA.handleFind(): JDA {
         }
 
         val mediaList = lookupMediaList(media, event.guild?.idLong)
+        val aniToDiscordName = aniListToDiscordNameMap(guild)
 
-        event.sendMediaResults(media, mediaList)
+        event.sendMediaResults(media, mediaList, aniToDiscordName)
     }
     onCommand(Command.MANGA, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
@@ -95,8 +98,9 @@ fun JDA.handleFind(): JDA {
         }
 
         val mediaList = lookupMediaList(media, event.guild?.idLong)
+        val aniToDiscordName = aniListToDiscordNameMap(guild)
 
-        event.sendMediaResults(media, mediaList)
+        event.sendMediaResults(media, mediaList, aniToDiscordName)
     }
     onCommand(Command.RANKING, basuraExceptionHandler) { event ->
         event.awaitDeferReply()
@@ -129,11 +133,22 @@ fun JDA.handleFind(): JDA {
         }
 
         val mediaList = lookupMediaList(media, event.guild?.idLong)
+        val aniToDiscordName = aniListToDiscordNameMap(guild)
 
-        event.sendMediaResults(media, mediaList)
+        event.sendMediaResults(media, mediaList, aniToDiscordName)
     }
 
     return this
+}
+
+internal fun aniListToDiscordNameMap(guild: Guild?): Map<Long, String?> {
+    val db by basura.instance<Database>()
+    if (guild == null) return mapOf()
+    return db.users
+        .filter { it.discordGuildId eq guild.idLong }
+        .map {
+            it.aniListId to guild.getMemberById(it.discordId)?.effectiveName
+        }.toMap()
 }
 
 internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<MediaList>? {
@@ -148,9 +163,13 @@ internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List
     )
 }
 
-internal suspend fun SlashCommandEvent.sendMediaResults(media: List<Media>, mediaList: List<MediaList>?) {
+internal suspend fun SlashCommandEvent.sendMediaResults(
+    media: List<Media>,
+    mediaList: List<MediaList>?,
+    aniToDiscordName: Map<Long, String?>
+) {
     val embeds = media.mapIndexed { i, m ->
-        generateMediaEmbed(m, mediaList, (i + 1), media.size)
+        generateMediaEmbed(m, mediaList, aniToDiscordName, (i + 1), media.size)
     }.toTypedArray()
 
     if (embeds.isEmpty()) {
@@ -160,4 +179,3 @@ internal suspend fun SlashCommandEvent.sendMediaResults(media: List<Media>, medi
 
     hook.sendPaginator(*embeds).await()
 }
-
