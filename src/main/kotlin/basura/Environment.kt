@@ -8,6 +8,16 @@ object Environment {
         get() =
             System.getenv("BOT_TOKEN")
 
+    val BOT_SHARD_ID: Int
+        get() =
+            System.getenv("BOT_SHARD_ID")
+                .toInt()
+
+    val BOT_SHARD_TOTAL: Int
+        get() =
+            System.getenv("BOT_SHARD_TOTAL")
+                .toInt()
+
     /**
      * Database JDBC url.
      */

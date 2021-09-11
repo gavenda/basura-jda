@@ -64,6 +64,7 @@ val basura = DI {
                 GatewayIntent.GUILD_MEMBERS
             )
             .useCoroutines()
+            .useSharding(Environment.BOT_SHARD_ID, Environment.BOT_SHARD_TOTAL)
             .build()
             .handleGuildEvents()
             .handleFind()

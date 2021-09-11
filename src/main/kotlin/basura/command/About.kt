@@ -44,9 +44,14 @@ fun JDA.handleAbout(): JDA {
                     inline = true
                 }
                 field {
+                    name = "Shard"
+                    value = shardInfo.shardString
+                    inline = true
+                }
+                field {
                     name = "Operating System"
                     value = "$java Java $javaVersion on $sys $sysVersion ($sysArch)"
-                    inline = false
+                    inline = true
                 }
                 footer {
                     name = "You can help with the development by dropping by on GitHub."
