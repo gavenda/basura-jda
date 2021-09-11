@@ -3,27 +3,28 @@ package basura.command
 import basura.*
 import basura.db.guilds
 import basura.graphql.AniList
+import basura.graphql.anilist.MediaType
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
 import org.ktorm.entity.first
 
-suspend fun onFind(event: SlashCommandEvent) {
-    val log by Log4j2("Find")
+suspend fun onManga(event: SlashCommandEvent) {
+    val log by Log4j2("Manga")
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
     event.awaitDeferReply()
 
     val query = event.requiredOption("query").asString.apply {
-        log.debug("Looking up anime/manga media: $this")
+        log.debug("Looking up manga media: $this")
     }
     val guild = event.guild
     val allowHentai = if (guild != null) {
         db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
     } else false
-    val media = aniList.findMedia(query)
+    val media = aniList.findMediaByType(query, MediaType.MANGA)
         ?.filterHentai(allowHentai)
 
     if (media == null) {
@@ -36,4 +37,3 @@ suspend fun onFind(event: SlashCommandEvent) {
 
     event.sendMediaResults(media, mediaList, aniToDiscordName)
 }
-

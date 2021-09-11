@@ -5,7 +5,6 @@ import basura.graphql.anilist.Character
 import basura.graphql.anilist.MediaType
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-
 fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): MessageEmbed {
     val characterTitle = StringBuilder().apply {
         val native = character.name?.native

@@ -15,9 +15,6 @@
  */
 package basura.discord
 
-import basura.LocaleMessage
-import basura.Log4j2
-import basura.sendLocalizedMessageIfAcknowledged
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
@@ -90,12 +87,6 @@ inline fun <reified T : GenericEvent> ShardManager.listener(crossinline consumer
     }.also { addEventListener(it) }
 }
 
-val defaultExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { event, ex ->
-    val log by Log4j2("DefaultExceptionHandler")
-    log.error("An unknown error occurred", ex)
-    event.sendLocalizedMessageIfAcknowledged(LocaleMessage.UnknownError)
-}
-
 /**
  * Requires [CoroutineEventManager] to be used!
  *
@@ -116,15 +107,10 @@ val defaultExceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = { 
  */
 inline fun JDA.onCommand(
     name: String,
-    noinline exceptionHandler: suspend (SlashCommandEvent, Exception) -> Unit = defaultExceptionHandler,
     crossinline consumer: suspend CoroutineEventListener.(SlashCommandEvent) -> Unit
 ) = listener<SlashCommandEvent> {
-    try {
-        if (it.name == name)
-            consumer(it)
-    } catch (ex: Exception) {
-        exceptionHandler(it, ex)
-    }
+    if (it.name == name)
+        consumer(it)
 }
 
 /**
@@ -329,7 +315,6 @@ inline fun ShardManager.onSelection(
 suspend inline fun <reified T : GenericEvent> JDA.await(crossinline filter: (T) -> Boolean = { true }) =
     suspendCancellableCoroutine<T> {
         val listener = object : EventListener {
-            @SubscribeEvent
             override fun onEvent(event: GenericEvent) {
                 if (event is T && filter(event)) {
                     removeEventListener(this)
@@ -369,7 +354,6 @@ suspend inline fun <reified T : GenericEvent> JDA.await(crossinline filter: (T) 
 suspend inline fun <reified T : GenericEvent> ShardManager.await(crossinline filter: (T) -> Boolean = { true }) =
     suspendCancellableCoroutine<T> {
         val listener = object : EventListener {
-            @SubscribeEvent
             override fun onEvent(event: GenericEvent) {
                 if (event is T && filter(event)) {
                     removeEventListener(this)

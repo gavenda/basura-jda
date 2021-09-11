@@ -1,9 +1,12 @@
 package basura
 
+import basura.command.*
 import basura.discord.interaction.*
+import basura.discord.listener
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 
 object Command {
     const val RANKING = "ranking"
@@ -27,7 +30,29 @@ object Command {
     }
 }
 
-fun JDA.updateBasuraCommands() = updateCommands {
+fun JDA.bindCommands(): JDA {
+    listener<SlashCommandEvent> { event ->
+        when(event.name) {
+            Command.ABOUT -> onAbout(event)
+            Command.ANIME -> onAnime(event)
+            Command.CHARACTER -> onCharacter(event)
+            Command.CLEAR -> onClear(event)
+            Command.FIND -> onFind(event)
+            Command.LINK -> onLink(event)
+            Command.MANGA -> onManga(event)
+            Command.PING -> onPing(event)
+            Command.RANKING -> onRanking(event)
+            Command.SETTING -> onSetting(event)
+            Command.STAFF -> onAbout(event)
+            Command.UNLINK -> onUnlink(event)
+            Command.USER -> onUser(event)
+        }
+    }
+
+    return this
+}
+
+fun JDA.updateBotCommands() = updateCommands {
     command(
         name = Command.ANIME,
         description = "Looks up the name of the anime."

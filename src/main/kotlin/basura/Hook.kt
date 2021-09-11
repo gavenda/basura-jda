@@ -14,8 +14,8 @@ import org.ktorm.dsl.eq
 import org.ktorm.entity.add
 import org.ktorm.entity.removeIf
 
-fun JDA.handleGuildEvents(): JDA {
-    val db by basura.instance<Database>()
+fun JDA.bindGuildEvents(): JDA {
+    val db by bot.instance<Database>()
 
     listener<GuildLeaveEvent> { event ->
         db.users.removeIf { it.discordGuildId eq event.guild.idLong }

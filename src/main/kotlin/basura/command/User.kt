@@ -3,61 +3,55 @@ package basura.command
 import basura.*
 import basura.db.users
 import basura.discord.await
-import basura.discord.onCommand
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
-import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
 import org.ktorm.dsl.eq
 import org.ktorm.entity.firstOrNull
 
-fun JDA.handleUser(): JDA {
+suspend fun onUser(event: SlashCommandEvent) {
     val log by Log4j2("User")
-    val db by basura.instance<Database>()
-    val aniList by basura.instance<AniList>()
+    val db by bot.instance<Database>()
+    val aniList by bot.instance<AniList>()
 
-    onCommand(Command.USER, basuraExceptionHandler) { event ->
-        event.awaitDeferReply()
+    event.awaitDeferReply()
 
-        val usernameOpt = event.getOption("username")?.asString?.apply {
-            log.debug("Looking up user: $this")
-        }
-        val guild = event.guild
-        // Assure not direct message
-        if (guild == null && usernameOpt == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
-            return@onCommand
-        }
-
-        val guildId = guild?.idLong!!
-
-        val username = usernameOpt
-            ?: db.users.firstOrNull {
-                (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
-            }?.aniListUsername
-
-        if (username == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.NotLinkedError)
-            return@onCommand
-        }
-
-        log.debug("Lookup user: $username")
-
-        val user = aniList.findUserStatisticsByName(username)
-
-        if (user == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
-            return@onCommand
-        }
-
-        val embed = generateUserEmbed(user)
-        event.hook
-            .sendMessageEmbeds(embed)
-            .await()
-
+    val usernameOpt = event.getOption("username")?.asString?.apply {
+        log.debug("Looking up user: $this")
+    }
+    val guild = event.guild
+    // Assure not direct message
+    if (guild == null && usernameOpt == null) {
+        event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
+        return
     }
 
-    return this
+    val guildId = guild?.idLong!!
+
+    val username = usernameOpt
+        ?: db.users.firstOrNull {
+            (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        }?.aniListUsername
+
+    if (username == null) {
+        event.sendLocalizedMessage(LocaleMessage.User.NotLinkedError)
+        return
+    }
+
+    log.debug("Lookup user: $username")
+
+    val user = aniList.findUserStatisticsByName(username)
+
+    if (user == null) {
+        event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
+        return
+    }
+
+    val embed = generateUserEmbed(user)
+    event.hook
+        .sendMessageEmbeds(embed)
+        .await()
 }

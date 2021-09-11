@@ -3,40 +3,35 @@ package basura.command
 import basura.*
 import basura.discord.await
 import basura.discord.interaction.sendPaginator
-import basura.discord.onCommand
 import basura.embed.generateCharacterEmbed
 import basura.graphql.AniList
-import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 
-fun JDA.handleCharacter(): JDA {
+suspend fun onCharacter(event: SlashCommandEvent) {
     val log by Log4j2("Character")
-    val aniList by basura.instance<AniList>()
+    val aniList by bot.instance<AniList>()
 
-    onCommand(Command.CHARACTER, basuraExceptionHandler) { event ->
-        event.awaitDeferReply()
+    event.awaitDeferReply()
 
-        val query = event.requiredOption("query").asString.apply {
-            log.debug("Looking up character: $this")
-        }
-        val characters = aniList.findCharacter(query)
+    val query = event.requiredOption("query").asString.apply {
+        log.debug("Looking up character: $this")
+    }
+    val characters = aniList.findCharacter(query)
 
-        if (characters == null) {
-            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
-            return@onCommand
-        }
-
-        val embeds = characters.mapIndexed { i, c ->
-            generateCharacterEmbed(c, (i + 1), characters.size)
-        }.toTypedArray()
-
-        if (embeds.isEmpty()) {
-            event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
-            return@onCommand
-        }
-
-        event.hook.sendPaginator(*embeds).await()
+    if (characters == null) {
+        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+        return
     }
 
-    return this
+    val embeds = characters.mapIndexed { i, c ->
+        generateCharacterEmbed(c, (i + 1), characters.size)
+    }.toTypedArray()
+
+    if (embeds.isEmpty()) {
+        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+        return
+    }
+
+    event.hook.sendPaginator(*embeds).await()
 }

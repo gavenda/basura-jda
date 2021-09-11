@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
 import java.util.Properties
 
@@ -13,7 +12,7 @@ repositories {
     maven("https://m2.dv8tion.net/releases")
 }
 
-val basuraMainClass = "basura.MainKt"
+val botMainClass = "basura.MainKt"
 val gitHash: String get() {
     if(File(".git").exists().not()) {
         return "SNAPSHOT"
@@ -31,7 +30,7 @@ val gitHash: String get() {
 }
 
 group = "basura"
-version = "1.0-$gitHash"
+version = "1.0-b$gitHash"
 
 dependencies {
     // Align versions of all Kotlin components
@@ -39,7 +38,7 @@ dependencies {
 
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
 
     // For GraphQL
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
@@ -106,5 +105,5 @@ tasks {
 }
 
 application {
-    mainClass.set(basuraMainClass)
+    mainClass.set(botMainClass)
 }

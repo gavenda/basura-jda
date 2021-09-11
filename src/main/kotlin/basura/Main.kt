@@ -1,21 +1,23 @@
 package basura
 
-import kotlinx.coroutines.DelicateCoroutinesApi
+import basura.discord.await
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.events.ReadyEvent
 import org.flywaydb.core.Flyway
 import org.kodein.di.instance
 import java.net.SocketException
 import javax.sql.DataSource
 import kotlin.system.exitProcess
 
-@DelicateCoroutinesApi
-fun main() {
+fun main() = runBlocking {
     val log by Log4j2("Main")
 
     try {
-        val jda by basura.instance<JDA>()
-        val dataSource by basura.instance<DataSource>()
+        val jda by bot.instance<JDA>()
+        val dataSource by bot.instance<DataSource>()
 
         // Migrate database
         Flyway.configure()
@@ -24,13 +26,12 @@ fun main() {
             .migrate()
 
         // Await and update commands
-        jda.awaitReady()
+        jda.await<ReadyEvent>()
         // Only update when specified
         if (Environment.BOT_UPDATE_COMMANDS) {
-            jda.updateBasuraCommands().queue()
+            jda.updateBotCommands().await()
         }
-
-        jda.presence.activity = Activity.competing("Trash")
+        jda.presence.setPresence(OnlineStatus.ONLINE, Activity.competing("Trash"))
     } catch (e: SocketException) {
         // Unable to connect, exit
         log.error("Cannot connect", e)
