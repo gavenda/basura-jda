@@ -27,5 +27,5 @@ interface CoroutineEventListener {
     /**
      * Unregisters this listener
      */
-    fun cancel()
+    fun cancel() {}
 }

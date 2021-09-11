@@ -17,21 +17,18 @@
 package basura.discord.interaction
 
 import basura.Message
-import net.dv8tion.jda.api.JDA
+import basura.discord.CoroutineEventListener
+import basura.discord.await
 import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.exceptions.ErrorHandler
-import net.dv8tion.jda.api.hooks.EventListener
-import net.dv8tion.jda.api.hooks.SubscribeEvent
 import net.dv8tion.jda.api.interactions.Interaction
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonInteraction
-import net.dv8tion.jda.api.requests.ErrorResponse
 import java.security.SecureRandom
 import java.time.Duration
 import java.util.*
@@ -39,14 +36,12 @@ import java.util.*
 const val DEFAULT_DURATION = 300L
 val DEFAULT_PREV = Button.secondary("prev", Emoji.fromUnicode("⬅️"))
 val DEFAULT_NEXT = Button.secondary("next", Emoji.fromUnicode("➡️"))
-//val DEFAULT_DELETE = Button.danger("delete", Emoji.fromUnicode("\uD83D\uDEAE"))
 
 class Paginator internal constructor(
     private val nonce: String,
     val duration: Duration
-) : EventListener {
+) : CoroutineEventListener {
     private var expiresAt: Long = System.currentTimeMillis() + duration.toMillis()
-
     private var index = 0
     private val pageCache = mutableListOf<Message>()
     private val nextPage: Message
@@ -58,6 +53,7 @@ class Paginator internal constructor(
             }
             return pageCache[nextIndex]
         }
+
     private val prevPage: Message
         get() {
             val nextIndex = --index
@@ -75,15 +71,13 @@ class Paginator internal constructor(
         return this
     }
 
-    var prev: Button = DEFAULT_PREV
-    var next: Button = DEFAULT_NEXT
-//    var delete: Button = DEFAULT_DELETE
+    private var prev = DEFAULT_PREV
+    private var next = DEFAULT_NEXT
 
     internal val controls: ActionRow
         get() = ActionRow.of(
             prev.withId("$nonce:prev"),
             next.withId("$nonce:next"),
-//            delete.withId("$nonce:delete")
         )
 
     val pages: List<Message> get() = pageCache.toList()
@@ -92,53 +86,40 @@ class Paginator internal constructor(
         pageCache.addAll(page)
     }
 
-    fun addPages(vararg page: MessageEmbed) {
-        addPages(*page.map { Message(embed = it) }.toTypedArray())
-    }
-
-    @SubscribeEvent
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (expiresAt < System.currentTimeMillis()) {
-            return unregister(event.jda)
+            event.jda.removeEventListener(this)
         }
         if (event !is ButtonInteraction) return
         val buttonId = event.componentId
         if (!buttonId.startsWith(nonce) || !filter(event)) return
         expiresAt = System.currentTimeMillis() + duration.toMillis()
         val (_, operation) = buttonId.split(":")
-        when (operation) {
-            "prev" -> {
-                event.editMessage(prevPage)
-                    .setActionRows(controls)
-                    .queue(null, ErrorHandler().handle(ErrorResponse.UNKNOWN_MESSAGE) { unregister(event.jda) })
-            }
-            "next" -> {
-                event.editMessage(nextPage)
-                    .setActionRows(controls)
-                    .queue(null, ErrorHandler().handle(ErrorResponse.UNKNOWN_MESSAGE) { unregister(event.jda) })
-            }
-//            "delete" -> {
-//                unregister(event.jda)
-//                event.deferEdit().queue()
-//                if (event.message == null)
-//                    event.hook.editOriginal(pageCache[index])
-//                        .setActionRows(emptyList())
-//                        .queue()
-//                else
-//                    event.hook.deleteOriginal().queue(null, ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
-//            }
-        }
-    }
 
-    private fun unregister(jda: JDA) {
-        jda.removeEventListener(this)
+        try {
+            when (operation) {
+                "prev" -> {
+                    event.editMessage(prevPage)
+                        .setActionRows(controls)
+                        .await()
+                }
+                "next" -> {
+                    event.editMessage(nextPage)
+                        .setActionRows(controls)
+                        .await()
+                }
+            }
+        } catch (ex: Exception) {
+            event.jda.removeEventListener(this)
+        }
     }
 }
 
 fun paginator(vararg pages: Message, expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION)): Paginator {
     val nonce = ByteArray(32)
     SecureRandom().nextBytes(nonce)
-    return Paginator(Base64.getEncoder().encodeToString(nonce), expireAfter).also { it.addPages(*pages) }
+    return Paginator(Base64.getEncoder().encodeToString(nonce), expireAfter)
+        .also { it.addPages(*pages) }
 }
 
 fun paginator(vararg pages: MessageEmbed, expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION)): Paginator {
@@ -146,81 +127,55 @@ fun paginator(vararg pages: MessageEmbed, expireAfter: Duration = Duration.ofSec
 }
 
 fun MessageChannel.sendPaginator(
-    paginator: Paginator,
-    beforeDelay: (Message) -> Message,
-    afterDelay: (Message) -> Message,
-) =
-    sendMessage(paginator.also { jda.addEventListener(it) }.pages[0])
-        .setActionRows(paginator.controls)
-        .map(beforeDelay)
-        .delay(paginator.duration)
-        .flatMap {
-            it.editMessageComponents()
-        }
-        .map(afterDelay)
+    paginator: Paginator
+) = sendMessage(paginator.also { jda.addEventListener(it) }.pages.first())
+    .setActionRows(paginator.controls)
+    .delay(paginator.duration)
+    .flatMap {
+        it.editMessageComponents()
+    }
 
 fun MessageChannel.sendPaginator(
     vararg pages: Message,
     expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    beforeDelay: (Message) -> Message = { it },
-    afterDelay: (Message) -> Message = { it },
     filter: (ButtonInteraction) -> Boolean = { true }
 ) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter),
-    beforeDelay = beforeDelay,
-    afterDelay = afterDelay
+    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )
 
 fun MessageChannel.sendPaginator(
     vararg pages: MessageEmbed,
     expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    beforeDelay: (Message) -> Message = { it },
-    afterDelay: (Message) -> Message = { it },
     filter: (ButtonInteraction) -> Boolean = { true }
 ) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter),
-    beforeDelay = beforeDelay,
-    afterDelay = afterDelay
+    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )
 
 fun InteractionHook.sendPaginator(
     paginator: Paginator,
-    beforeDelay: (Message) -> Message,
-    afterDelay: (Message) -> Message,
-) =
-    sendMessage(paginator.also { jda.addEventListener(it) }.pages[0])
-        .addActionRows(paginator.controls)
-        .map(beforeDelay)
-        .delay(paginator.duration)
-        .map(afterDelay)
-        .flatMap { it.editMessageComponents() }
+) = sendMessage(paginator.also { jda.addEventListener(it) }.pages.first())
+    .addActionRows(paginator.controls)
+    .delay(paginator.duration)
+    .flatMap { it.editMessageComponents() }
 
 fun InteractionHook.sendPaginator(
     vararg pages: Message,
     expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    beforeDelay: (Message) -> Message = { it },
-    afterDelay: (Message) -> Message = { it },
     filter: (ButtonInteraction) -> Boolean = { true }
 ) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter),
-    beforeDelay = beforeDelay,
-    afterDelay = afterDelay
+    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )
 
 fun InteractionHook.sendPaginator(
     vararg pages: MessageEmbed,
     expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    beforeDelay: (Message) -> Message = { it },
-    afterDelay: (Message) -> Message = { it },
     filter: (ButtonInteraction) -> Boolean = { true }
 ) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter),
-    beforeDelay = beforeDelay,
-    afterDelay = afterDelay
+    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )
 
 fun Interaction.replyPaginator(paginator: Paginator) =
-    reply(paginator.also { user.jda.addEventListener(it) }.pages[0])
+    reply(paginator.also { user.jda.addEventListener(it) }.pages.first())
         .addActionRows(paginator.controls)
         .delay(paginator.duration)
         .flatMap { it.editOriginalComponents() }
