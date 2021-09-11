@@ -25,7 +25,10 @@ fun main() {
 
         // Await and update commands
         jda.awaitReady()
-        jda.updateBasuraCommands().queue()
+        // Only update when specified
+        if (Environment.BOT_UPDATE_COMMANDS) {
+            jda.updateBasuraCommands().queue()
+        }
 
         jda.presence.activity = Activity.competing("Trash")
 

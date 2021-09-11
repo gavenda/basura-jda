@@ -14,14 +14,20 @@ repositories {
 }
 
 val basuraMainClass = "basura.MainKt"
-val gitHash: String = ByteArrayOutputStream()
-    .use { outputStream ->
-    project.exec {
-        commandLine("git")
-        args("rev-parse", "--short", "HEAD")
-        standardOutput = outputStream
+val gitHash: String get() {
+    if(File(".git").exists().not()) {
+        return "SNAPSHOT"
     }
-    outputStream.toString().trim()
+
+    return ByteArrayOutputStream()
+        .use { outputStream ->
+            project.exec {
+                commandLine("git")
+                args("rev-parse", "--short", "HEAD")
+                standardOutput = outputStream
+            }
+            outputStream.toString().trim()
+        }
 }
 
 group = "basura"
@@ -82,21 +88,19 @@ tasks {
     }
 
     val generateVersionProperties = register(name = "generateVersionProperties") {
-        doLast {
-            val resourcesDir = File("$buildDir/resources/main").apply {
-                mkdirs()
-            }
-            val propertiesFilePath = File(resourcesDir, "/version.properties").apply {
-                createNewFile()
-            }
-            Properties().apply {
-                setProperty("version", version.toString())
-                store(propertiesFilePath.outputStream(), null)
-            }
+        val resourcesDir = File("$buildDir/resources/main").apply {
+            mkdirs()
+        }
+        val propertiesFilePath = File(resourcesDir, "/version.properties").apply {
+            createNewFile()
+        }
+        Properties().apply {
+            setProperty("version", version.toString())
+            store(propertiesFilePath.outputStream(), null)
         }
     }
 
-    processResources {
+    compileKotlin {
         dependsOn(generateVersionProperties)
     }
 }
