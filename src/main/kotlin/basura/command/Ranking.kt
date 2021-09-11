@@ -1,10 +1,16 @@
 package basura.command
 
-import basura.*
+import basura.LocaleMessage
+import basura.Log4j2
+import basura.bot
 import basura.db.guilds
+import basura.discord.interaction.asInt
+import basura.discord.interaction.deferReplyAwait
+import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
+import basura.sendLocalizedMessage
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -16,12 +22,12 @@ suspend fun onRanking(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.awaitDeferReply()
+    event.deferReplyAwait()
 
-    val amount = event.requiredOption("amount").asLong.toInt()
+    val amount = event.requiredOption("amount").asInt
     val format = event.getOption("format")?.asString
     val season = event.getOption("season")?.asString
-    val seasonYear = event.getOption("year")?.asLong?.toInt()
+    val seasonYear = event.getOption("year")?.asInt
 
     log.debug("Looking up rankings: [ amount = $amount, format = $format, season = $season, seasonYear = $seasonYear ] ")
 
@@ -29,9 +35,8 @@ suspend fun onRanking(event: SlashCommandEvent) {
     val mediaFormat = format?.let { MediaFormat.valueOf(it) } ?: MediaFormat.TV
 
     val formats = listOf(mediaFormat)
-    val guild = event.guild
-    val allowHentai = if (guild != null) {
-        db.guilds.first { it.discordGuildId eq guild.idLong }.hentai
+    val allowHentai = if (event.isFromGuild) {
+        db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }.hentai
     } else false
     val media = aniList.findMediaByRanking(
         amount = amount,
@@ -46,7 +51,7 @@ suspend fun onRanking(event: SlashCommandEvent) {
     }
 
     val mediaList = lookupMediaList(media, event.guild?.idLong)
-    val aniToDiscordName = aniListToDiscordNameMap(guild)
+    val aniToDiscordName = aniListToDiscordNameMap(event.guild)
 
     event.sendMediaResults(media, mediaList, aniToDiscordName)
 }

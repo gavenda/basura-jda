@@ -18,20 +18,6 @@ fun findResourceAsText(path: String): String {
 }
 
 /**
- * Finds the first required option with the specified name.
- */
-fun CommandInteraction.requiredOption(option: String): OptionMapping {
-    return getOption(option)!!
-}
-
-/**
- * Defer for a reply.
- */
-suspend fun SlashCommandEvent.awaitDeferReply(ephemeral: Boolean = false): InteractionHook = deferReply()
-    .setEphemeral(ephemeral)
-    .await()
-
-/**
  * Send a localized message.
  */
 suspend fun SlashCommandEvent.sendLocalizedMessage(key: String, ephemeral: Boolean = false): Message =

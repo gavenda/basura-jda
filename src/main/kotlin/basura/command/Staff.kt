@@ -2,6 +2,8 @@ package basura.command
 
 import basura.*
 import basura.discord.await
+import basura.discord.interaction.deferReplyAwait
+import basura.discord.interaction.requiredOption
 import basura.discord.interaction.sendPaginator
 import basura.embed.generateStaffEmbed
 import basura.graphql.AniList
@@ -12,7 +14,7 @@ suspend fun onStaff(event: SlashCommandEvent) {
     val log by Log4j2("Staff")
     val aniList by bot.instance<AniList>()
 
-    event.awaitDeferReply()
+    event.deferReplyAwait()
 
     val query = event.requiredOption("query").asString.apply {
         log.debug("Looking up staff: $this")

@@ -3,6 +3,7 @@ package basura.command
 import basura.*
 import basura.db.users
 import basura.discord.await
+import basura.discord.interaction.deferReplyAwait
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -17,14 +18,15 @@ suspend fun onUser(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.awaitDeferReply()
+    event.deferReplyAwait()
 
     val usernameOpt = event.getOption("username")?.asString?.apply {
         log.debug("Looking up user: $this")
     }
     val guild = event.guild
-    // Assure not direct message
-    if (guild == null && usernameOpt == null) {
+
+    // Assure in guild when option for username is empty
+    if (event.isDirectMessage && usernameOpt == null) {
         event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
         return
     }

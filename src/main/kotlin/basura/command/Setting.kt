@@ -3,6 +3,8 @@ package basura.command
 import basura.*
 import basura.db.guilds
 import basura.discord.await
+import basura.discord.interaction.deferReplyAwait
+import basura.discord.interaction.requiredOption
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -12,21 +14,19 @@ import org.ktorm.entity.first
 import java.util.*
 
 suspend fun onSetting(event: SlashCommandEvent) {
-    event.awaitDeferReply(true)
-
-    val guild = event.guild
+    event.deferReplyAwait(true)
 
     // Assure not direct message
-    if (guild == null) {
+    if (event.isFromGuild) {
         event.sendLocalizedMessage(LocaleMessage.ServerOnlyError)
         return
     }
 
     // Should be administrator or owner
-    val isAdmin = event.context.invoker.hasPermission(
+    val isAdmin = event.guildContext.invoker.hasPermission(
         Permission.ADMINISTRATOR,
     )
-    val isOwner = event.context.invoker.isOwner
+    val isOwner = event.guildContext.invoker.isOwner
     val isAllowed = isOwner || isAdmin
 
     if (isAllowed.not()) {
@@ -43,7 +43,7 @@ suspend fun onSetting(event: SlashCommandEvent) {
 
 internal suspend fun onListSettings(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
-    val dbGuild = db.guilds.first { it.discordGuildId eq event.context.guild.idLong }
+    val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
     val locale = Locale.forLanguageTag(dbGuild.locale)
     val embed = Embed {
         title = "Settings"
@@ -67,7 +67,7 @@ internal suspend fun onListSettings(event: SlashCommandEvent) {
 internal suspend fun onHentai(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val display = event.requiredOption("display").asBoolean
-    val dbGuild = db.guilds.first { it.discordGuildId eq event.context.guild.idLong }
+    val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
 
     dbGuild.hentai = display
     dbGuild.flushChanges()
@@ -78,7 +78,7 @@ internal suspend fun onHentai(event: SlashCommandEvent) {
 internal suspend fun onLanguage(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val language = event.requiredOption("language").asString
-    val dbGuild = db.guilds.first { it.discordGuildId eq event.context.guild.idLong }
+    val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
 
     dbGuild.locale = language
     dbGuild.flushChanges()

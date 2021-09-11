@@ -2,6 +2,7 @@ package basura.command
 
 import basura.*
 import basura.db.users
+import basura.discord.interaction.deferReplyAwait
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -14,7 +15,7 @@ suspend fun onUnlink(event: SlashCommandEvent) {
     val log by Log4j2("Link")
     val db by bot.instance<Database>()
 
-    event.awaitDeferReply()
+    event.deferReplyAwait()
 
     val guild = event.guild
     // Assure not direct message

@@ -43,7 +43,7 @@ fun JDA.bindCommands(): JDA {
             Command.PING -> onPing(event)
             Command.RANKING -> onRanking(event)
             Command.SETTING -> onSetting(event)
-            Command.STAFF -> onAbout(event)
+            Command.STAFF -> onStaff(event)
             Command.UNLINK -> onUnlink(event)
             Command.USER -> onUser(event)
         }

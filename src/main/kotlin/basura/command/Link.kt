@@ -1,9 +1,14 @@
 package basura.command
 
-import basura.*
+import basura.LocaleMessage
+import basura.Log4j2
+import basura.bot
 import basura.db.User
 import basura.db.users
+import basura.discord.interaction.deferReplyAwait
+import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
+import basura.sendLocalizedMessage
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -17,21 +22,20 @@ suspend fun onLink(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.awaitDeferReply()
+    event.deferReplyAwait()
 
-    val guild = event.guild
     // Assure not direct message
-    if (guild == null) {
+    if (event.isDirectMessage) {
         event.sendLocalizedMessage(LocaleMessage.Link.ServerOnlyError, true)
         return
     }
 
-    val guildId = guild.idLong
+    val guild = event.guildContext.guild
     val username = event.requiredOption("username").asString.apply {
         log.debug("Linking AniList user [ $this ] to Discord [ user = ${event.user.name}, guild = ${guild.name} ]")
     }
     val existingUser = db.users.firstOrNull {
-        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guild.idLong)
     }
 
     if (existingUser != null) {
@@ -51,7 +55,7 @@ suspend fun onLink(event: SlashCommandEvent) {
             aniListId = user.id
             aniListUsername = user.name
             discordId = event.user.idLong
-            discordGuildId = guildId
+            discordGuildId = guild.idLong
         }
     )
 

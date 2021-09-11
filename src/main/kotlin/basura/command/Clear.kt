@@ -2,17 +2,17 @@ package basura.command
 
 import basura.*
 import basura.discord.await
+import basura.discord.interaction.deferReplyAwait
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 
 suspend fun onClear(event: SlashCommandEvent) {
     val log by Log4j2("Clear")
 
-    event.awaitDeferReply(true)
+    event.deferReplyAwait(true)
 
-    val guild = event.guild
     // Assure direct message
-    if (guild != null) {
+    if (event.isFromGuild) {
         event.sendLocalizedMessage(LocaleMessage.DirectMessageOnly)
         return
     }
