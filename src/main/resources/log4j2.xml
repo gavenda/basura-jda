@@ -3,10 +3,8 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout disableAnsi="false">
-                <Pattern>%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}
-                    %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green,
-                    DEBUG=green bold, TRACE=blue} %style{}{magenta} %style{%C}{cyan} :
-                    %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%xEx}
+                <Pattern>
+                    %d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{}{magenta} %style{%C}{cyan} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%xEx}
                 </Pattern>
             </PatternLayout>
         </Console>
@@ -53,18 +51,23 @@
     <Loggers>
         <Logger name="basura" level="debug" additivity="false">
             <AppenderRef ref="Bot"/>
+            <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="net.dv8tion" level="debug" additivity="false">
             <AppenderRef ref="Bot"/>
+            <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="com.zaxxer" level="info" additivity="false">
             <AppenderRef ref="Database"/>
+            <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.ktorm" level="debug" additivity="false">
             <AppenderRef ref="Database"/>
+            <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="org.flywaydb" level="info" additivity="false">
             <AppenderRef ref="Database"/>
+            <AppenderRef ref="Console"/>
         </Logger>
         <Root level="error">
             <AppenderRef ref="Console"/>
