@@ -38,6 +38,7 @@ object LocaleMessage {
     const val UnknownError = "unknown-error"
     const val TimeoutError = "timeout-error"
     const val SettingUpdated = "setting-updated"
+    const val ServerAdminOnly = "server-admin-only"
 }
 
 /**

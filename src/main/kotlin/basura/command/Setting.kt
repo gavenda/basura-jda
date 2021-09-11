@@ -5,6 +5,7 @@ import basura.db.guilds
 import basura.discord.await
 import basura.discord.onCommand
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -22,6 +23,18 @@ fun JDA.handleSetting(): JDA {
         // Assure not direct message
         if (guild == null) {
             event.sendLocalizedMessage(LocaleMessage.ServerOnlyError)
+            return@onCommand
+        }
+
+        // Should be administrator or owner
+        val isAdmin = event.context.invoker.hasPermission(
+            Permission.ADMINISTRATOR,
+        )
+        val isOwner = event.context.invoker.isOwner
+        val isAllowed = isOwner || isAdmin
+
+        if(isAllowed.not()) {
+            event.sendLocalizedMessage(LocaleMessage.ServerAdminOnly)
             return@onCommand
         }
 
