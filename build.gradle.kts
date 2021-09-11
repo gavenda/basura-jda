@@ -76,7 +76,7 @@ java {
 }
 
 tasks {
-    withType<KotlinCompile> {
+    compileKotlin {
         kotlinOptions {
             jvmTarget = "11"
             freeCompilerArgs = listOf(
@@ -100,7 +100,7 @@ tasks {
         }
     }
 
-    compileKotlin {
+    classes.configure {
         dependsOn(generateVersionProperties)
     }
 }
