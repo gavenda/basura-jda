@@ -13,6 +13,7 @@ class Log4j2(val name: String = "") {
     }
 
     operator fun getValue(nothing: Nothing?, prop: KProperty<*>): Logger {
-        return LogManager.getLogger("basura.$name")
+        val packageName = this::class.java.packageName
+        return LogManager.getLogger("$packageName.$name")
     }
 }

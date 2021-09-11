@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.MemberCachePolicy
+import net.dv8tion.jda.api.utils.cache.CacheFlag
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import org.kodein.di.DI
@@ -59,12 +61,17 @@ val basura = DI {
         }
     }
     bind<JDA>() with singleton {
-        JDABuilder.createLight(Environment.BOT_TOKEN)
-            .enableIntents(
-                GatewayIntent.GUILD_MEMBERS
-            )
+        JDABuilder.create(Environment.BOT_TOKEN, GatewayIntent.GUILD_MEMBERS)
             .useCoroutines()
             .useSharding(Environment.BOT_SHARD_ID, Environment.BOT_SHARD_TOTAL)
+            .disableCache(
+                CacheFlag.ACTIVITY,
+                CacheFlag.VOICE_STATE,
+                CacheFlag.EMOTE,
+                CacheFlag.CLIENT_STATUS,
+                CacheFlag.ONLINE_STATUS
+            )
+            .setEnableShutdownHook(true)
             .build()
             .handleGuildEvents()
             .handleFind()

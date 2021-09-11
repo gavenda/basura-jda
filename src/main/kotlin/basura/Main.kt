@@ -31,10 +31,6 @@ fun main() {
         }
 
         jda.presence.activity = Activity.competing("Trash")
-
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() = jda.shutdown()
-        })
     } catch (e: SocketException) {
         // Unable to connect, exit
         log.error("Cannot connect", e)
