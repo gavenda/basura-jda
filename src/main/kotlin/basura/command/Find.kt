@@ -22,9 +22,9 @@ import org.ktorm.entity.map
 internal fun List<Media>.filterHentai(allowHentai: Boolean): List<Media> {
     if (allowHentai) return this
     return filter {
-        it.genres.containsAll(
-            listOf("Hentai", "Yuri", "Yaoi")
-        )
+        it.genres.any { genre ->
+            genre == "Hentai" || genre == "Yuri" || genre == "Yaoi"
+        }.not()
     }
 }
 
