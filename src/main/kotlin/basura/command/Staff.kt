@@ -22,7 +22,7 @@ suspend fun onStaff(event: SlashCommandEvent) {
     val characters = aniList.findStaff(query)
 
     if (characters == null) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingStaff)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingStaff)
         return
     }
 
@@ -31,7 +31,7 @@ suspend fun onStaff(event: SlashCommandEvent) {
     }.toTypedArray()
 
     if (embeds.isEmpty()) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingStaff)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingStaff)
         return
     }
 

@@ -13,7 +13,7 @@ suspend fun onClear(event: SlashCommandEvent) {
 
     // Ensure direct message
     if (event.isFromGuild) {
-        event.sendLocalizedMessage(LocaleMessage.DirectMessageOnly)
+        event.sendLocalized(LocaleMessage.DirectMessageOnly)
         return
     }
 
@@ -28,6 +28,6 @@ suspend fun onClear(event: SlashCommandEvent) {
         event.privateChannel.deleteMessages(messages)
     } while (messages.isNotEmpty())
 
-    event.sendLocalizedMessage(LocaleMessage.DirectMessageCleared)
+    event.sendLocalized(LocaleMessage.DirectMessageCleared)
 }
 

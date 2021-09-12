@@ -1,13 +1,12 @@
 package basura
 
+import basura.cache.ConcurrentCache
+import basura.cache.TimedCache
 import basura.discord.await
 import io.github.furstenheim.CopyDown
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.commands.CommandInteraction
-import net.dv8tion.jda.api.interactions.commands.OptionMapping
 import java.util.*
 
 /**
@@ -18,14 +17,36 @@ fun findResourceAsText(path: String): String {
 }
 
 /**
+ * Backing field for cache.
+ */
+private val messageContextCache = TimedCache(ConcurrentCache<SlashCommandEvent, MessageContext>())
+
+/**
+ * Returns the message context of this slash command.
+ */
+val SlashCommandEvent.messageContext get() = messageContextCache.getOrPut(this) {
+    Messages.withContext(user, guild)
+}
+
+/**
  * Send a localized message.
  */
-suspend fun SlashCommandEvent.sendLocalizedMessage(key: String, ephemeral: Boolean = false): Message =
+suspend fun SlashCommandEvent.sendLocalized(key: String, ephemeral: Boolean = false): Message =
     hook.sendMessage(
-        Messages.whenApplicableFor(user, guild)
+        Messages.withContext(user, guild)
             .get(key)
     )
         .setEphemeral(ephemeral)
+        .await()
+
+/**
+ * Send a localized message.
+ */
+suspend fun SlashCommandEvent.sendLocalizedFormat(key: String, vararg args: Array<String>): Message =
+    hook.sendMessage(
+        Messages.withContext(user, guild)
+            .get(key)
+    )
         .await()
 
 /**
@@ -44,7 +65,7 @@ suspend fun PrivateChannel.deleteMessages(messages: List<Message>) {
 }
 
 fun Boolean.toYesNo(): String {
-    if(this) return "Yes"
+    if (this) return "Yes"
     return "No"
 }
 

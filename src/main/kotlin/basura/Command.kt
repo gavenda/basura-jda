@@ -22,6 +22,7 @@ object Command {
     const val CLEAR = "clear"
     const val STAFF = "staff"
     const val SETTING = "setting"
+    const val LANGUAGE = "language"
 
     object Setting {
         const val CURRENT = "current"
@@ -46,6 +47,7 @@ fun JDA.bindCommands(): JDA {
             Command.STAFF -> onStaff(event)
             Command.UNLINK -> onUnlink(event)
             Command.USER -> onUser(event)
+            Command.LANGUAGE -> onLanguage(event)
         }
     }
 
@@ -196,6 +198,15 @@ fun JDA.updateBotCommands() = updateCommands {
                 description = "Display hentai or not.",
                 required = true
             )
+        }
+    }
+    command(Command.LANGUAGE, "The language you want to show up (will take precedence over server setting).") {
+        option<String>(
+            name = "language",
+            description = "The language to use.",
+            required = true
+        ) {
+            choice("English", "en-US")
         }
     }
 }

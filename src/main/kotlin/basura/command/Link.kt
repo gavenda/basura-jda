@@ -8,7 +8,7 @@ import basura.db.users
 import basura.discord.interaction.deferReplyAwait
 import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
-import basura.sendLocalizedMessage
+import basura.sendLocalized
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -26,7 +26,7 @@ suspend fun onLink(event: SlashCommandEvent) {
 
     // Ensure in guild
     if (event.isDirectMessage) {
-        event.sendLocalizedMessage(LocaleMessage.Link.ServerOnlyError, true)
+        event.sendLocalized(LocaleMessage.Link.ServerOnlyError, true)
         return
     }
 
@@ -39,14 +39,14 @@ suspend fun onLink(event: SlashCommandEvent) {
     }
 
     if (existingUser != null) {
-        event.sendLocalizedMessage(LocaleMessage.Link.AlreadyLinked)
+        event.sendLocalized(LocaleMessage.Link.AlreadyLinked)
         return
     }
 
     val user = aniList.findUserByName(username)
 
     if (user == null) {
-        event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
+        event.sendLocalized(LocaleMessage.User.NotFoundError)
         return
     }
 
@@ -59,5 +59,5 @@ suspend fun onLink(event: SlashCommandEvent) {
         }
     )
 
-    event.sendLocalizedMessage(LocaleMessage.Link.Successful)
+    event.sendLocalized(LocaleMessage.Link.Successful)
 }

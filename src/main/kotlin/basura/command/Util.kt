@@ -9,7 +9,7 @@ import basura.embed.generateMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.Media
 import basura.graphql.anilist.MediaList
-import basura.sendLocalizedMessage
+import basura.sendLocalized
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -65,7 +65,7 @@ internal suspend fun SlashCommandEvent.sendMediaResults(
     }.toTypedArray()
 
     if (embeds.isEmpty()) {
-        sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
+        sendLocalized(LocaleMessage.Find.NoMatchingMedia)
         return
     }
 

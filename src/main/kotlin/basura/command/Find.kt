@@ -7,7 +7,7 @@ import basura.db.guilds
 import basura.discord.interaction.deferReplyAwait
 import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
-import basura.sendLocalizedMessage
+import basura.sendLocalized
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -31,7 +31,7 @@ suspend fun onFind(event: SlashCommandEvent) {
         ?.filterHentai(allowHentai)
 
     if (media == null) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingMedia)
         return
     }
 

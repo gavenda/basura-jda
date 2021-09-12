@@ -19,7 +19,7 @@ suspend fun onUnlink(event: SlashCommandEvent) {
 
     // Ensure in guild
     if (event.isDirectMessage) {
-        event.sendLocalizedMessage(LocaleMessage.Unlink.ServerOnlyError, true)
+        event.sendLocalized(LocaleMessage.Unlink.ServerOnlyError, true)
         return
     }
 
@@ -29,7 +29,7 @@ suspend fun onUnlink(event: SlashCommandEvent) {
     }
 
     if (existingUser == null) {
-        event.sendLocalizedMessage(LocaleMessage.Unlink.NotLinked)
+        event.sendLocalized(LocaleMessage.Unlink.NotLinked)
         return
     }
 
@@ -39,5 +39,5 @@ suspend fun onUnlink(event: SlashCommandEvent) {
         (it.discordId eq event.user.idLong) and (it.discordGuildId eq guild.idLong)
     }
 
-    event.sendLocalizedMessage(LocaleMessage.Unlink.Successful)
+    event.sendLocalized(LocaleMessage.Unlink.Successful)
 }

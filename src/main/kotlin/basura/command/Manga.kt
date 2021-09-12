@@ -29,7 +29,7 @@ suspend fun onManga(event: SlashCommandEvent) {
         ?.filterHentai(allowHentai)
 
     if (media == null) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingMedia)
         return
     }
 

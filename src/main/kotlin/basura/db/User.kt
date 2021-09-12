@@ -15,7 +15,6 @@ interface User : Entity<User> {
     var discordGuildId: Long
     var aniListId: Long
     var aniListUsername: String
-    var locale: String
 }
 
 object Users : Table<User>("user") {
@@ -24,7 +23,21 @@ object Users : Table<User>("user") {
     val discordGuildId = long("discord_guild_id").bindTo { it.discordGuildId }
     val aniListId = long("anilist_id").bindTo { it.aniListId }
     val aniListUsername = varchar("anilist_username").bindTo { it.aniListUsername }
+}
+
+interface UserLocale : Entity<UserLocale> {
+    companion object : Entity.Factory<UserLocale>()
+
+    val id: Long
+    var discordId: Long
+    var locale: String
+}
+
+object UserLocales : Table<UserLocale>("user_locale") {
+    val id = long("id").primaryKey().bindTo { it.id }
+    val discordId = long("discord_id").bindTo { it.discordId }
     val locale = varchar("locale").bindTo { it.locale }
 }
 
 val Database.users get() = this.sequenceOf(Users)
+val Database.userLocales get() = this.sequenceOf(UserLocales)

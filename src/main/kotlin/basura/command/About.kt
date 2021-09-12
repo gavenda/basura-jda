@@ -1,17 +1,8 @@
 package basura.command
 
-import basura.Embed
+import basura.*
 import basura.discord.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import java.util.*
-
-internal const val ABOUT =
-    """
-Basura literally means trash. 
-
-Trash includes isekai bullshit, power leveling xianxia, wuxia, otome politics, 
-and any that heightens your level of retardedness.
-"""
 
 suspend fun onAbout(event: SlashCommandEvent) {
     val java = System.getProperty("java.vendor")
@@ -22,36 +13,36 @@ suspend fun onAbout(event: SlashCommandEvent) {
 
     event.replyEmbeds(
         Embed {
-            title = "What is Basura?"
+            title = event.messageContext.get(LocaleMessage.About.Title)
             url = "https://github.com/gavenda/basura"
-            description = ABOUT
+            description = event.messageContext.get(LocaleMessage.About.Description)
             field {
-                name = "Version"
-                value = VERSION
+                name = event.messageContext.get(LocaleMessage.About.Version)
+                value = version
                 inline = true
             }
             field {
-                name = "Language"
+                name = event.messageContext.get(LocaleMessage.About.Language)
                 value = "[Kotlin](https://kotlinlang.org)"
                 inline = true
             }
             field {
-                name = "Framework"
+                name = event.messageContext.get(LocaleMessage.About.Framework)
                 value = "[JDA](https://github.com/DV8FromTheWorld/JDA)"
                 inline = true
             }
             field {
-                name = "Shard"
+                name = event.messageContext.get(LocaleMessage.About.Shard)
                 value = event.jda.shardInfo.shardString
                 inline = true
             }
             field {
-                name = "Operating System"
+                name = event.messageContext.get(LocaleMessage.About.OperatingSystem)
                 value = "$java Java $javaVersion on $sys $sysVersion ($sysArch)"
                 inline = true
             }
             footer {
-                name = "You can help with the development by dropping by on GitHub."
+                name = event.messageContext.get(LocaleMessage.About.Note)
                 iconUrl = "https://github.com/fluidicon.png"
             }
         }
@@ -59,9 +50,3 @@ suspend fun onAbout(event: SlashCommandEvent) {
         .setEphemeral(true)
         .await()
 }
-
-val VERSION: String
-    get() =
-        Properties().apply {
-            load(object {}.javaClass.getResourceAsStream("/version.properties"))
-        }.getProperty("version") ?: "-"

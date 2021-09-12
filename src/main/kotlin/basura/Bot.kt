@@ -19,8 +19,12 @@ import org.kodein.di.instance
 import org.kodein.di.singleton
 import org.ktorm.database.Database
 import java.io.File
+import java.util.*
 import javax.sql.DataSource
 
+/**
+ * Main bot module.
+ */
 val bot = DI {
     bind<DataSource>() with singleton {
         val config = HikariConfig()
@@ -72,4 +76,13 @@ val bot = DI {
             .bindCommands()
             .bindGuildEvents()
     }
+}
+
+/**
+ * The bot version.
+ */
+val version by lazy {
+    Properties().apply {
+        load(object {}.javaClass.getResourceAsStream("/version.properties"))
+    }.getProperty("version") ?: "-"
 }

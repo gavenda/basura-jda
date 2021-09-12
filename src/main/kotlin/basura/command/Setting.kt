@@ -18,7 +18,7 @@ suspend fun onSetting(event: SlashCommandEvent) {
 
     // Ensure in guild
     if (event.isDirectMessage) {
-        event.sendLocalizedMessage(LocaleMessage.ServerOnlyError)
+        event.sendLocalized(LocaleMessage.ServerOnlyError)
         return
     }
 
@@ -30,18 +30,18 @@ suspend fun onSetting(event: SlashCommandEvent) {
     val isAllowed = isOwner || isAdmin
 
     if (isAllowed.not()) {
-        event.sendLocalizedMessage(LocaleMessage.ServerAdminOnly)
+        event.sendLocalized(LocaleMessage.ServerAdminOnly)
         return
     }
 
     when (event.subcommandName) {
-        Command.Setting.CURRENT -> onListSettings(event)
-        Command.Setting.HENTAI -> onHentai(event)
-        Command.Setting.LANGUAGE -> onLanguage(event)
+        Command.Setting.CURRENT -> onSettingCurrent(event)
+        Command.Setting.HENTAI -> onSettingHentai(event)
+        Command.Setting.LANGUAGE -> onSettingLanguage(event)
     }
 }
 
-internal suspend fun onListSettings(event: SlashCommandEvent) {
+internal suspend fun onSettingCurrent(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
     val locale = Locale.forLanguageTag(dbGuild.locale)
@@ -64,7 +64,7 @@ internal suspend fun onListSettings(event: SlashCommandEvent) {
         .await()
 }
 
-internal suspend fun onHentai(event: SlashCommandEvent) {
+internal suspend fun onSettingHentai(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val display = event.requiredOption("display").asBoolean
     val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
@@ -72,10 +72,10 @@ internal suspend fun onHentai(event: SlashCommandEvent) {
     dbGuild.hentai = display
     dbGuild.flushChanges()
 
-    event.sendLocalizedMessage(LocaleMessage.SettingUpdated)
+    event.sendLocalized(LocaleMessage.SettingUpdated)
 }
 
-internal suspend fun onLanguage(event: SlashCommandEvent) {
+internal suspend fun onSettingLanguage(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val language = event.requiredOption("language").asString
     val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
@@ -83,5 +83,5 @@ internal suspend fun onLanguage(event: SlashCommandEvent) {
     dbGuild.locale = language
     dbGuild.flushChanges()
 
-    event.sendLocalizedMessage(LocaleMessage.SettingUpdated)
+    event.sendLocalized(LocaleMessage.SettingUpdated)
 }

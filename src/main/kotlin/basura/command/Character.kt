@@ -22,7 +22,7 @@ suspend fun onCharacter(event: SlashCommandEvent) {
     val characters = aniList.findCharacter(query)
 
     if (characters == null) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingCharacter)
         return
     }
 
@@ -31,7 +31,7 @@ suspend fun onCharacter(event: SlashCommandEvent) {
     }.toTypedArray()
 
     if (embeds.isEmpty()) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingCharacter)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingCharacter)
         return
     }
 

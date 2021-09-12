@@ -10,7 +10,7 @@ import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
-import basura.sendLocalizedMessage
+import basura.sendLocalized
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -46,7 +46,7 @@ suspend fun onRanking(event: SlashCommandEvent) {
     )?.filterHentai(allowHentai)
 
     if (media == null) {
-        event.sendLocalizedMessage(LocaleMessage.Find.NoMatchingMedia)
+        event.sendLocalized(LocaleMessage.Find.NoMatchingMedia)
         return
     }
 

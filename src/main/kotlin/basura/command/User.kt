@@ -25,7 +25,7 @@ suspend fun onUser(event: SlashCommandEvent) {
     }
     // Ensure in guild when option for username is empty
     if (event.isDirectMessage && usernameOpt == null) {
-        event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
+        event.sendLocalized(LocaleMessage.User.UsernameRequiredError)
         return
     }
 
@@ -33,7 +33,7 @@ suspend fun onUser(event: SlashCommandEvent) {
         val user = aniList.findUserStatisticsByName(usernameOpt)
 
         if (user == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
+            event.sendLocalized(LocaleMessage.User.NotFoundError)
             return
         }
 
@@ -49,7 +49,7 @@ suspend fun onUser(event: SlashCommandEvent) {
         }?.aniListUsername
 
         if (username == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.NotLinkedError)
+            event.sendLocalized(LocaleMessage.User.NotLinkedError)
             return
         }
 
@@ -57,7 +57,7 @@ suspend fun onUser(event: SlashCommandEvent) {
 
         // Linked, but not found
         if (user == null) {
-            event.sendLocalizedMessage(LocaleMessage.User.LinkedNotFoundError)
+            event.sendLocalized(LocaleMessage.User.LinkedNotFoundError)
             return
         }
 
