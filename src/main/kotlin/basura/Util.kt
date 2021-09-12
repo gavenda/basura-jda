@@ -32,10 +32,7 @@ val SlashCommandEvent.messageContext get() = messageContextCache.getOrPut(this) 
  * Send a localized message.
  */
 suspend fun SlashCommandEvent.sendLocalized(key: String, ephemeral: Boolean = false): Message =
-    hook.sendMessage(
-        Messages.withContext(user, guild)
-            .get(key)
-    )
+    hook.sendMessage(messageContext.get(key))
         .setEphemeral(ephemeral)
         .await()
 
@@ -43,10 +40,7 @@ suspend fun SlashCommandEvent.sendLocalized(key: String, ephemeral: Boolean = fa
  * Send a localized message.
  */
 suspend fun SlashCommandEvent.sendLocalizedFormat(key: String, vararg args: Array<String>): Message =
-    hook.sendMessage(
-        Messages.withContext(user, guild)
-            .get(key)
-    )
+    hook.sendMessage(messageContext.get(key))
         .await()
 
 /**
