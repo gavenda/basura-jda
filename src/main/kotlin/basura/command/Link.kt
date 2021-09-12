@@ -24,7 +24,7 @@ suspend fun onLink(event: SlashCommandEvent) {
 
     event.deferReplyAwait()
 
-    // Assure not direct message
+    // Ensure in guild
     if (event.isDirectMessage) {
         event.sendLocalizedMessage(LocaleMessage.Link.ServerOnlyError, true)
         return

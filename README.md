@@ -36,6 +36,11 @@ Interaction commands in my opinion, should mitigate the necessary need for a hel
 - Localization per User/Server (this is already built on the code)
 - Whatever my Discord server requests me to do that is weab related
 
+## Where is MyAnimeList support?
+Dear lord, of all things, the most toxic community I have ever went into. I can probably do this, once they have their APIv2 sorted out. As of now it is almost impossible
+to incorporate MAL without going hacky. As of this writing (09/12/2021) their authentication docs and endpoints are still on TODO. Even if it works, I won't bother without a proper
+documentation.
+
 ## Can I contribute to the code?
 Feel free to fork the code. Since this isn't a publicly hosted bot yet, you are free to host your own.
 

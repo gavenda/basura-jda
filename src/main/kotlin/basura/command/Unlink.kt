@@ -17,16 +17,15 @@ suspend fun onUnlink(event: SlashCommandEvent) {
 
     event.deferReplyAwait()
 
-    val guild = event.guild
-    // Assure not direct message
-    if (guild == null) {
+    // Ensure in guild
+    if (event.isDirectMessage) {
         event.sendLocalizedMessage(LocaleMessage.Unlink.ServerOnlyError, true)
         return
     }
 
-    val guildId = guild.idLong
+    val guild = event.guildContext.guild
     val existingUser = db.users.firstOrNull {
-        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guild.idLong)
     }
 
     if (existingUser == null) {
@@ -37,7 +36,7 @@ suspend fun onUnlink(event: SlashCommandEvent) {
     log.debug("Unlinking AniList user [ ${existingUser.aniListUsername} ] from Discord [ user = ${event.user.name}, guild = ${guild.name} ]")
 
     db.users.removeIf {
-        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        (it.discordId eq event.user.idLong) and (it.discordGuildId eq guild.idLong)
     }
 
     event.sendLocalizedMessage(LocaleMessage.Unlink.Successful)

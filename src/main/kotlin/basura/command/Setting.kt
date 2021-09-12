@@ -16,8 +16,8 @@ import java.util.*
 suspend fun onSetting(event: SlashCommandEvent) {
     event.deferReplyAwait(true)
 
-    // Assure not direct message
-    if (event.isFromGuild) {
+    // Ensure in guild
+    if (event.isDirectMessage) {
         event.sendLocalizedMessage(LocaleMessage.ServerOnlyError)
         return
     }

@@ -11,7 +11,7 @@ suspend fun onClear(event: SlashCommandEvent) {
 
     event.deferReplyAwait(true)
 
-    // Assure direct message
+    // Ensure direct message
     if (event.isFromGuild) {
         event.sendLocalizedMessage(LocaleMessage.DirectMessageOnly)
         return

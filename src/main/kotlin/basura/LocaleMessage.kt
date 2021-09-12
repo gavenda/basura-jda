@@ -12,6 +12,7 @@ object LocaleMessage {
         const val UsernameRequiredError = "user-username-required-error"
         const val NotLinkedError = "user-account-not-linked"
         const val NotFoundError = "user-not-found-error"
+        const val LinkedNotFoundError = "user-linked-not-found"
     }
 
     object Link {

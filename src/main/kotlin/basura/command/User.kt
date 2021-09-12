@@ -23,37 +23,47 @@ suspend fun onUser(event: SlashCommandEvent) {
     val usernameOpt = event.getOption("username")?.asString?.apply {
         log.debug("Looking up user: $this")
     }
-    val guild = event.guild
-
-    // Assure in guild when option for username is empty
+    // Ensure in guild when option for username is empty
     if (event.isDirectMessage && usernameOpt == null) {
         event.sendLocalizedMessage(LocaleMessage.User.UsernameRequiredError)
         return
     }
 
-    val guildId = guild?.idLong!!
+    if(usernameOpt != null) {
+        val user = aniList.findUserStatisticsByName(usernameOpt)
 
-    val username = usernameOpt
-        ?: db.users.firstOrNull {
-            (it.discordId eq event.user.idLong) and (it.discordGuildId eq guildId)
+        if (user == null) {
+            event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
+            return
+        }
+
+        val embed = generateUserEmbed(user)
+        event.hook
+            .sendMessageEmbeds(embed)
+            .await()
+    } else {
+        // We are sure in a guild
+
+        val username = db.users.firstOrNull {
+            (it.discordId eq event.user.idLong) and (it.discordGuildId eq event.guildContext.guild.idLong)
         }?.aniListUsername
 
-    if (username == null) {
-        event.sendLocalizedMessage(LocaleMessage.User.NotLinkedError)
-        return
+        if (username == null) {
+            event.sendLocalizedMessage(LocaleMessage.User.NotLinkedError)
+            return
+        }
+
+        val user = aniList.findUserStatisticsByName(username)
+
+        // Linked, but not found
+        if (user == null) {
+            event.sendLocalizedMessage(LocaleMessage.User.LinkedNotFoundError)
+            return
+        }
+
+        val embed = generateUserEmbed(user)
+        event.hook
+            .sendMessageEmbeds(embed)
+            .await()
     }
-
-    log.debug("Lookup user: $username")
-
-    val user = aniList.findUserStatisticsByName(username)
-
-    if (user == null) {
-        event.sendLocalizedMessage(LocaleMessage.User.NotFoundError)
-        return
-    }
-
-    val embed = generateUserEmbed(user)
-    event.hook
-        .sendMessageEmbeds(embed)
-        .await()
 }
