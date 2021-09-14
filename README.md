@@ -25,7 +25,7 @@ Go ahead. The only difference between this and **Annie** is that it uses interac
 
 **Annie** has a lot better social interactions while this purely focuses on what everyone has watched, scored, and mainly looking up trash.
 
-I also highly advise you to use Annie as it has a much larger community.
+I also highly advise you to use **Annie** as it has a much larger community.
 
 ## Why aren't you using Annie instead?
 **Annie** broke for sometime and my discord server frequently uses it. I am the only capable developer there so I checked out **Annie**'s code, port over its functionalities
@@ -46,7 +46,7 @@ to incorporate MAL without going hacky. As of this writing (09/12/2021) their au
 documentation.
 
 ## Can I contribute to the code?
-Feel free to fork the code. Since this isn't a publicly hosted bot yet, you are free to host your own.
+Feel free to fork the code. You are free to host your own instance.
 
 ## Get me up and running!
 Rename `example.env` to `.env` and put your discord bot token.
