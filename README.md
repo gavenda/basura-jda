@@ -4,6 +4,9 @@ A Discord bot purely based on the open source code of [Annie May](https://github
 
 Highly consider this project a love child or bastard of **Annie**.
 
+To add this bot to your server, click [here](https://discord.com/api/oauth2/authorize?client_id=870014073197170799&permissions=517543939136&scope=bot%20applications.commands).
+I cannot guarantee 24/7 uptime as it is self-hosted and running a Raspberry Pi.
+
 ## What is Basura?
 Basura literally means trash. 
 
@@ -18,10 +21,11 @@ It is purely based off what **Annie** can do (description also from **Annie**):
 - Display media rankings based on season, season year, and format.
 
 ## I will just use Annie instead!
-Go ahead. I won't be publicly hosting this bot unless necessary (I only host it when I'm online). The only difference between this and Annie is that it uses interaction commands 
-(or slash commands as most people call it)
+Go ahead. The only difference between this and **Annie** is that it uses interaction commands (or slash commands as most people call it)
 
 **Annie** has a lot better social interactions while this purely focuses on what everyone has watched, scored, and mainly looking up trash.
+
+I also highly advise you to use Annie as it has a much larger community.
 
 ## Why aren't you using Annie instead?
 **Annie** broke for sometime and my discord server frequently uses it. I am the only capable developer there so I checked out **Annie**'s code, port over its functionalities
