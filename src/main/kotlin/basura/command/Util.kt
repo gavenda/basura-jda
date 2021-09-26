@@ -5,7 +5,7 @@ import basura.bot
 import basura.db.users
 import basura.discord.await
 import basura.discord.interaction.sendPaginator
-import basura.embed.generateMediaEmbed
+import basura.embed.pagedMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.Media
 import basura.graphql.anilist.MediaList
@@ -60,14 +60,14 @@ internal suspend fun SlashCommandEvent.sendMediaResults(
     mediaList: List<MediaList>?,
     aniToDiscordName: Map<Long, String?>
 ) {
-    val embeds = media.mapIndexed { i, m ->
-        generateMediaEmbed(m, mediaList, aniToDiscordName, (i + 1), media.size)
+    val paginated = media.mapIndexed { i, m ->
+        pagedMediaEmbed(m, mediaList, aniToDiscordName, (i + 1), media.size)
     }.toTypedArray()
 
-    if (embeds.isEmpty()) {
+    if (paginated.isEmpty()) {
         sendLocalized(LocaleMessage.Find.NoMatchingMedia)
         return
     }
 
-    hook.sendPaginator(*embeds).await()
+    hook.sendPaginator(*paginated).await()
 }

@@ -5,7 +5,7 @@ import basura.discord.await
 import basura.discord.interaction.deferReplyAwait
 import basura.discord.interaction.requiredOption
 import basura.discord.interaction.sendPaginator
-import basura.embed.generateCharacterEmbed
+import basura.embed.pagedCharacterEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -26,14 +26,14 @@ suspend fun onCharacter(event: SlashCommandEvent) {
         return
     }
 
-    val embeds = characters.mapIndexed { i, c ->
-        generateCharacterEmbed(c, (i + 1), characters.size)
+    val paginated = characters.mapIndexed { i, c ->
+        pagedCharacterEmbed(c, (i + 1), characters.size)
     }.toTypedArray()
 
-    if (embeds.isEmpty()) {
+    if (paginated.isEmpty()) {
         event.sendLocalized(LocaleMessage.Find.NoMatchingCharacter)
         return
     }
 
-    event.hook.sendPaginator(*embeds).await()
+    event.hook.sendPaginator(*paginated).await()
 }

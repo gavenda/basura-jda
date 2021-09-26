@@ -1,19 +1,19 @@
 package basura.embed
 
 import basura.*
+import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.*
-import net.dv8tion.jda.api.entities.MessageEmbed
 
 /**
  * Generates an embed given the media and a user's media list.
  */
-fun generateMediaEmbed(
+fun pagedMediaEmbed(
     media: Media,
     mediaList: List<MediaList>?,
     aniToDiscordName: Map<Long, String?>,
     pageNo: Int,
     pageTotal: Int
-): MessageEmbed {
+): PaginatedMessage {
     val season = if (media.season != MediaSeason.UNKNOWN) media.season.displayName else "-"
     val seasonYear = if (media.seasonYear != 0) media.seasonYear else "-"
     val score = media.meanScore.toStars()
@@ -107,7 +107,7 @@ fun generateMediaEmbed(
     mediaDescription.append("\n")
     mediaDescription.append(actualDescription)
 
-    return Embed {
+    val mediaEmbed = Embed {
         title = media.title?.english ?: media.title?.romaji
         description = mediaDescription.toString()
         thumbnail = media.coverImage?.extraLarge
@@ -263,9 +263,17 @@ fun generateMediaEmbed(
             }
         }
 
-        // Add page number
-        footer {
-            name = "Page $pageNo of $pageTotal"
+        if (pageTotal > 1) {
+            // Add page number
+            footer {
+                name = "Page $pageNo of $pageTotal"
+            }
         }
     }
+
+    return PaginatedMessage(
+        message = Message(embed = mediaEmbed),
+        urlName = "View on AniList",
+        urlHref = media.siteUrl
+    )
 }

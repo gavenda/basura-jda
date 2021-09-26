@@ -7,6 +7,8 @@ import basura.discord.interaction.deferReplyAwait
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.Button
 import org.kodein.di.instance
 import org.ktorm.database.Database
 import org.ktorm.dsl.and
@@ -40,6 +42,11 @@ suspend fun onUser(event: SlashCommandEvent) {
         val embed = generateUserEmbed(user)
         event.hook
             .sendMessageEmbeds(embed)
+            .addActionRows(
+                ActionRow.of(
+                    Button.link(user.siteUrl, "View on AniList")
+                )
+            )
             .await()
     } else {
         // We are sure in a guild
@@ -64,6 +71,11 @@ suspend fun onUser(event: SlashCommandEvent) {
         val embed = generateUserEmbed(user)
         event.hook
             .sendMessageEmbeds(embed)
+            .addActionRows(
+                ActionRow.of(
+                    Button.link(user.siteUrl, "View on AniList")
+                )
+            )
             .await()
     }
 }

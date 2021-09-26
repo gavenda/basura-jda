@@ -1,11 +1,11 @@
 package basura.embed
 
 import basura.*
+import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.Character
 import basura.graphql.anilist.MediaType
-import net.dv8tion.jda.api.entities.MessageEmbed
 
-fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): MessageEmbed {
+fun pagedCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): PaginatedMessage {
     val characterTitle = StringBuilder().apply {
         val native = character.name?.native
         append(character.name?.full)
@@ -63,7 +63,7 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
         .abbreviate(DESCRIPTION_LIMIT)
         .dropLastWhile { it != '\n' }
 
-    return Embed {
+    val characterEmbed = Embed {
         title = characterTitle.toString()
         description = resultDescription
         thumbnail = character.image?.large
@@ -108,9 +108,17 @@ fun generateCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): M
             inline = true
         }
 
-        // Add page number
-        footer {
-            name = "Page $pageNo of $pageTotal"
+        if (pageTotal > 1) {
+            // Add page number
+            footer {
+                name = "Page $pageNo of $pageTotal"
+            }
         }
     }
+
+    return PaginatedMessage(
+        message = Message(embed = characterEmbed),
+        urlName = "View on AniList",
+        urlHref = character.siteUrl
+    )
 }

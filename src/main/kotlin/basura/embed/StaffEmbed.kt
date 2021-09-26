@@ -1,10 +1,10 @@
 package basura.embed
 
 import basura.*
+import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.Staff
-import net.dv8tion.jda.api.entities.MessageEmbed
 
-fun generateStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): MessageEmbed {
+fun pagedStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): PaginatedMessage {
     val staffTitle = StringBuilder().apply {
         val native = staff.name?.native
         append(staff.name?.full)
@@ -67,7 +67,7 @@ fun generateStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): MessageEmbed 
         .abbreviate(DESCRIPTION_LIMIT)
         .dropLastWhile { it != '\n' }
 
-    return Embed {
+    val staffEmbed = Embed {
         title = staffTitle.toString()
         description = resultDescription
         thumbnail = staff.image?.large
@@ -112,9 +112,17 @@ fun generateStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): MessageEmbed 
             inline = true
         }
 
-        // Add page number
-        footer {
-            name = "Page $pageNo of $pageTotal"
+        if (pageTotal > 1) {
+            // Add page number
+            footer {
+                name = "Page $pageNo of $pageTotal"
+            }
         }
     }
+
+    return PaginatedMessage(
+        message = Message(embed = staffEmbed),
+        urlName = "View on AniList",
+        urlHref = staff.siteUrl
+    )
 }
