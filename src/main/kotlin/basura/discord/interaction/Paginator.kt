@@ -19,9 +19,7 @@ package basura.discord.interaction
 import basura.discord.CoroutineEventListener
 import basura.discord.await
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.interactions.Interaction
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
@@ -80,11 +78,17 @@ class Paginator internal constructor(
     private var next = DEFAULT_NEXT
 
     internal val controls: ActionRow
-        get() = ActionRow.of(
-            prev.withId("$nonce:prev"),
-            next.withId("$nonce:next"),
-            Button.link(currPage.urlHref, currPage.urlName)
-        )
+        get() = if (pageCache.size > 1) {
+            ActionRow.of(
+                prev.withId("$nonce:prev"),
+                next.withId("$nonce:next"),
+                Button.link(currPage.urlHref, currPage.urlName)
+            )
+        } else {
+            ActionRow.of(
+                Button.link(currPage.urlHref, currPage.urlName)
+            )
+        }
 
     val pages: List<PaginatedMessage> get() = pageCache.toList()
 
@@ -106,20 +110,12 @@ class Paginator internal constructor(
             when (operation) {
                 "prev" -> {
                     event.editMessage(prevPage.message)
-                        .apply {
-                            if (pages.size > 1) {
-                                setActionRows(controls)
-                            }
-                        }
+                        .setActionRows(controls)
                         .await()
                 }
                 "next" -> {
                     event.editMessage(nextPage.message)
-                        .apply {
-                            if (pages.size > 1) {
-                                setActionRows(controls)
-                            }
-                        }
+                        .setActionRows(controls)
                         .await()
                 }
             }
@@ -136,35 +132,10 @@ fun paginator(vararg pages: PaginatedMessage, expireAfter: Duration = Duration.o
         .also { it.addPages(*pages) }
 }
 
-fun MessageChannel.sendPaginator(
-    paginator: Paginator
-) = sendMessage(paginator.also { jda.addEventListener(it) }.pages.first().message)
-    .apply {
-        if (paginator.pages.size > 1) {
-            setActionRows(paginator.controls)
-        }
-    }
-    .delay(paginator.duration)
-    .flatMap {
-        it.editMessageComponents()
-    }
-
-fun MessageChannel.sendPaginator(
-    vararg pages: PaginatedMessage,
-    expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    filter: (ButtonInteraction) -> Boolean = { true }
-) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
-)
-
 fun InteractionHook.sendPaginator(
     paginator: Paginator,
 ) = sendMessage(paginator.also { jda.addEventListener(it) }.pages.first().message)
-    .apply {
-        if (paginator.pages.size > 1) {
-            addActionRows(paginator.controls)
-        }
-    }
+    .addActionRows(paginator.controls)
     .delay(paginator.duration)
     .flatMap { it.editMessageComponents() }
 
@@ -175,19 +146,3 @@ fun InteractionHook.sendPaginator(
 ) = sendPaginator(
     paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )
-
-fun Interaction.replyPaginator(paginator: Paginator) =
-    reply(paginator.also { user.jda.addEventListener(it) }.pages.first().message)
-        .apply {
-            if (paginator.pages.size > 1) {
-                addActionRows(paginator.controls)
-            }
-        }
-        .delay(paginator.duration)
-        .flatMap { it.editOriginalComponents() }
-
-fun Interaction.replyPaginator(
-    vararg pages: PaginatedMessage,
-    expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
-    filter: (ButtonInteraction) -> Boolean = { true }
-) = replyPaginator(paginator(*pages, expireAfter = expireAfter).filterBy(filter))
