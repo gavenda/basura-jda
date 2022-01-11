@@ -3,7 +3,7 @@ package basura
 import basura.db.Guild
 import basura.db.guilds
 import basura.db.users
-import basura.discord.listener
+import dev.minn.jda.ktx.listener
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent

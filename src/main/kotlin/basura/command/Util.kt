@@ -3,13 +3,13 @@ package basura.command
 import basura.LocaleMessage
 import basura.bot
 import basura.db.users
-import basura.discord.await
-import basura.discord.interaction.sendPaginator
 import basura.embed.pagedMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.Media
 import basura.graphql.anilist.MediaList
+import basura.paginator.sendAniPaginator
 import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -69,5 +69,5 @@ internal suspend fun SlashCommandEvent.sendMediaResults(
         return
     }
 
-    hook.sendPaginator(*paginated).await()
+    hook.sendAniPaginator(*paginated).await()
 }

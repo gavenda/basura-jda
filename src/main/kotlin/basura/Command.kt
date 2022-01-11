@@ -1,10 +1,10 @@
 package basura
 
 import basura.command.*
-import basura.discord.interaction.*
-import basura.discord.listener
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
+import dev.minn.jda.ktx.listener
+import dev.minn.jda.ktx.interactions.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 

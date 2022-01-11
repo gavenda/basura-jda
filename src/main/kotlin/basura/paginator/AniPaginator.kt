@@ -14,38 +14,43 @@
  * limitations under the License.
  */
 
-package basura.discord.interaction
+package basura.paginator
 
-import basura.discord.CoroutineEventListener
-import basura.discord.await
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
+import net.dv8tion.jda.api.exceptions.ErrorHandler
+import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonInteraction
+import net.dv8tion.jda.api.requests.ErrorResponse
 import java.security.SecureRandom
-import java.time.Duration
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 const val DEFAULT_DURATION = 300L
 val DEFAULT_PREV = Button.primary("prev", "Previous")
 val DEFAULT_NEXT = Button.primary("next", "Next")
 
-data class PaginatedMessage(
+data class AniPage(
     val message: Message,
     val urlName: String = "",
     val urlHref: String = ""
 )
 
-class Paginator internal constructor(
+class AniPaginator internal constructor(
     private val nonce: String,
     val duration: Duration
-) : CoroutineEventListener {
-    private var expiresAt: Long = System.currentTimeMillis() + duration.toMillis()
+): EventListener {
+    private var expiresAt: Long = System.currentTimeMillis() + duration.inWholeMilliseconds
     private var index = 0
-    private val pageCache = mutableListOf<PaginatedMessage>()
-    private val nextPage: PaginatedMessage
+    private val pageCache = mutableListOf<AniPage>()
+    private val nextPage: AniPage
         get() {
             val nextIndex = ++index
             if (nextIndex > pageCache.lastIndex) {
@@ -55,7 +60,7 @@ class Paginator internal constructor(
             return pageCache[nextIndex]
         }
 
-    private val prevPage: PaginatedMessage
+    private val prevPage: AniPage
         get() {
             val nextIndex = --index
             if (nextIndex < 0) {
@@ -69,7 +74,7 @@ class Paginator internal constructor(
 
     var filter: (ButtonInteraction) -> Boolean = { true }
 
-    fun filterBy(filter: (ButtonInteraction) -> Boolean): Paginator {
+    fun filterBy(filter: (ButtonInteraction) -> Boolean): AniPaginator {
         this.filter = filter
         return this
     }
@@ -90,59 +95,60 @@ class Paginator internal constructor(
             )
         }
 
-    val pages: List<PaginatedMessage> get() = pageCache.toList()
+    val pages: List<AniPage> get() = pageCache.toList()
 
-    fun addPages(vararg page: PaginatedMessage) {
+    fun addPages(vararg page: AniPage) {
         pageCache.addAll(page)
     }
 
-    override suspend fun onEvent(event: GenericEvent) {
-        if (expiresAt < System.currentTimeMillis()) {
-            event.jda.removeEventListener(this)
-        }
-        if (event !is ButtonInteraction) return
+    override fun onEvent(event: GenericEvent) {
+        if (expiresAt < System.currentTimeMillis())
+            return unregister(event.jda)
+        if (event !is ButtonClickEvent) return
         val buttonId = event.componentId
         if (!buttonId.startsWith(nonce) || !filter(event)) return
-        expiresAt = System.currentTimeMillis() + duration.toMillis()
+        expiresAt = System.currentTimeMillis() + duration.inWholeMilliseconds
         val (_, operation) = buttonId.split(":")
-
-        try {
-            when (operation) {
-                "prev" -> {
-                    event.editMessage(prevPage.message)
-                        .setActionRows(controls)
-                        .await()
-                }
-                "next" -> {
-                    event.editMessage(nextPage.message)
-                        .setActionRows(controls)
-                        .await()
-                }
+        when (operation) {
+            "prev" -> {
+                event.editMessage(prevPage.message)
+                    .setActionRows(controls)
+                    .queue(null, ErrorHandler().handle(ErrorResponse.UNKNOWN_MESSAGE) { unregister(event.jda) })
             }
-        } catch (ex: Exception) {
-            event.jda.removeEventListener(this)
+            "next" -> {
+                event.editMessage(nextPage.message)
+                    .setActionRows(controls)
+                    .queue(null, ErrorHandler().handle(ErrorResponse.UNKNOWN_MESSAGE) { unregister(event.jda) })
+            }
         }
+    }
+
+    private fun unregister(jda: JDA) {
+        jda.removeEventListener(this)
     }
 }
 
-fun paginator(vararg pages: PaginatedMessage, expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION)): Paginator {
+fun aniPaginator(
+    vararg pages: AniPage,
+    expireAfter: Duration = DEFAULT_DURATION.seconds
+): AniPaginator {
     val nonce = ByteArray(32)
     SecureRandom().nextBytes(nonce)
-    return Paginator(Base64.getEncoder().encodeToString(nonce), expireAfter)
+    return AniPaginator(Base64.getEncoder().encodeToString(nonce), expireAfter)
         .also { it.addPages(*pages) }
 }
 
-fun InteractionHook.sendPaginator(
-    paginator: Paginator,
-) = sendMessage(paginator.also { jda.addEventListener(it) }.pages.first().message)
-    .addActionRows(paginator.controls)
-    .delay(paginator.duration)
+fun InteractionHook.sendAniPaginator(
+    aniPaginator: AniPaginator,
+) = sendMessage(aniPaginator.also { jda.addEventListener(it) }.pages.first().message)
+    .addActionRows(aniPaginator.controls)
+    .delay(aniPaginator.duration.toJavaDuration())
     .flatMap { it.editMessageComponents() }
 
-fun InteractionHook.sendPaginator(
-    vararg pages: PaginatedMessage,
-    expireAfter: Duration = Duration.ofSeconds(DEFAULT_DURATION),
+fun InteractionHook.sendAniPaginator(
+    vararg pages: AniPage,
+    expireAfter: Duration = DEFAULT_DURATION.seconds,
     filter: (ButtonInteraction) -> Boolean = { true }
-) = sendPaginator(
-    paginator = paginator(*pages, expireAfter = expireAfter).filterBy(filter)
+) = sendAniPaginator(
+    aniPaginator = aniPaginator(*pages, expireAfter = expireAfter).filterBy(filter)
 )

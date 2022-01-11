@@ -4,13 +4,11 @@ import basura.LocaleMessage
 import basura.Log4j2
 import basura.bot
 import basura.db.guilds
-import basura.discord.interaction.asInt
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
 import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -22,12 +20,12 @@ suspend fun onRanking(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
-    val amount = event.requiredOption("amount").asInt
+    val amount = event.getOption("amount")!!.asLong.toInt()
     val format = event.getOption("format")?.asString
     val season = event.getOption("season")?.asString
-    val seasonYear = event.getOption("year")?.asInt
+    val seasonYear = event.getOption("year")?.asLong?.toInt()
 
     log.debug("Looking up rankings: [ amount = $amount, format = $format, season = $season, seasonYear = $seasonYear ] ")
 

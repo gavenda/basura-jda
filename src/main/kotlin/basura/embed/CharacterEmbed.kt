@@ -1,11 +1,11 @@
 package basura.embed
 
 import basura.*
-import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.Character
 import basura.graphql.anilist.MediaType
+import basura.paginator.AniPage
 
-fun pagedCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): PaginatedMessage {
+fun pagedCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): AniPage {
     val characterTitle = StringBuilder().apply {
         val native = character.name?.native
         append(character.name?.full)
@@ -116,7 +116,7 @@ fun pagedCharacterEmbed(character: Character, pageNo: Int, pageTotal: Int): Pagi
         }
     }
 
-    return PaginatedMessage(
+    return AniPage(
         message = Message(embed = characterEmbed),
         urlName = "View on AniList",
         urlHref = character.siteUrl

@@ -5,10 +5,9 @@ import basura.Log4j2
 import basura.bot
 import basura.db.User
 import basura.db.users
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
 import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -22,7 +21,7 @@ suspend fun onLink(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
     // Ensure in guild
     if (event.isDirectMessage) {
@@ -31,7 +30,7 @@ suspend fun onLink(event: SlashCommandEvent) {
     }
 
     val guild = event.guildContext.guild
-    val username = event.requiredOption("username").asString.apply {
+    val username = event.getOption("username")!!.asString.apply {
         log.debug("Linking AniList user [ $this ] to Discord [ user = ${event.user.name}, guild = ${guild.name} ]")
     }
     val existingUser = db.users.firstOrNull {

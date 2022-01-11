@@ -1,6 +1,6 @@
 package basura
 
-import basura.discord.await
+import dev.minn.jda.ktx.await
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus

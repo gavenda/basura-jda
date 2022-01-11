@@ -1,7 +1,7 @@
 package basura.command
 
 import basura.*
-import basura.discord.await
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 
 suspend fun onAbout(event: SlashCommandEvent) {

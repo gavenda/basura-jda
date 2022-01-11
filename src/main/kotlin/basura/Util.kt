@@ -2,7 +2,7 @@ package basura
 
 import basura.cache.ConcurrentCache
 import basura.cache.TimedCache
-import basura.discord.await
+import dev.minn.jda.ktx.await
 import io.github.furstenheim.CopyDown
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel

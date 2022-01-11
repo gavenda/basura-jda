@@ -1,8 +1,11 @@
 package basura.command
 
-import basura.*
+import basura.LocaleMessage
+import basura.Log4j2
+import basura.bot
 import basura.db.users
-import basura.discord.interaction.deferReplyAwait
+import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -15,7 +18,7 @@ suspend fun onUnlink(event: SlashCommandEvent) {
     val log by Log4j2("Link")
     val db by bot.instance<Database>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
     // Ensure in guild
     if (event.isDirectMessage) {

@@ -5,9 +5,8 @@ import basura.Log4j2
 import basura.bot
 import basura.db.UserLocale
 import basura.db.userLocales
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
 import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -19,9 +18,9 @@ suspend fun onLanguage(event: SlashCommandEvent) {
     val log by Log4j2("Language")
     val db by bot.instance<Database>()
 
-    event.deferReplyAwait(true)
+    event.deferReply(true).await()
 
-    val languageLocale = event.requiredOption("language").asString
+    val languageLocale = event.getOption("language")!!.asString
 
     // Find existing
     val userLocale = db.userLocales.firstOrNull { it.discordId eq event.user.idLong }

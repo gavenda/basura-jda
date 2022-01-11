@@ -1,15 +1,14 @@
 package basura.command
 
 import basura.*
-import basura.discord.await
-import basura.discord.interaction.deferReplyAwait
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 
 suspend fun onClear(event: SlashCommandEvent) {
     val log by Log4j2("Clear")
 
-    event.deferReplyAwait(true)
+    event.deferReply(true).await()
 
     // Ensure direct message
     if (event.isFromGuild) {

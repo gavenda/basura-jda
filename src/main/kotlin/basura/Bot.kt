@@ -1,10 +1,11 @@
 package basura
 
-import basura.discord.useCoroutines
 import basura.graphql.AniList
 import basura.graphql.AniListGraphQL
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import dev.minn.jda.ktx.createJDA
+import dev.minn.jda.ktx.default
 import kotlinx.serialization.json.Json
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -59,20 +60,24 @@ val bot = DI {
         }
     }
     bind<JDA>() with singleton {
-        JDABuilder.create(Environment.BOT_TOKEN, GatewayIntent.GUILD_MEMBERS)
-            .useCoroutines()
-            .useSharding(Environment.BOT_SHARD_ID, Environment.BOT_SHARD_TOTAL)
-            .disableCache(
+        createJDA(
+            token = Environment.BOT_TOKEN,
+            intents = listOf(GatewayIntent.GUILD_MEMBERS)
+        ) {
+            useSharding(Environment.BOT_SHARD_ID, Environment.BOT_SHARD_TOTAL)
+            disableCache(
                 CacheFlag.ACTIVITY,
                 CacheFlag.VOICE_STATE,
                 CacheFlag.EMOTE,
                 CacheFlag.CLIENT_STATUS,
                 CacheFlag.ONLINE_STATUS
             )
+
             // DND during startup
-            .setStatus(OnlineStatus.DO_NOT_DISTURB)
-            .setEnableShutdownHook(true)
-            .build()
+            setStatus(OnlineStatus.DO_NOT_DISTURB)
+            setEnableShutdownHook(true)
+
+        }
             .bindCommands()
             .bindGuildEvents()
     }

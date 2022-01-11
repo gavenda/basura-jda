@@ -1,12 +1,10 @@
 package basura.command
 
 import basura.*
-import basura.discord.await
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
-import basura.discord.interaction.sendPaginator
 import basura.embed.pagedStaffEmbed
 import basura.graphql.AniList
+import basura.paginator.sendAniPaginator
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 
@@ -14,9 +12,9 @@ suspend fun onStaff(event: SlashCommandEvent) {
     val log by Log4j2("Staff")
     val aniList by bot.instance<AniList>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
-    val query = event.requiredOption("query").asString.apply {
+    val query = event.getOption("query")!!.asString.apply {
         log.debug("Looking up staff: $this")
     }
     val characters = aniList.findStaff(query)
@@ -35,5 +33,5 @@ suspend fun onStaff(event: SlashCommandEvent) {
         return
     }
 
-    event.hook.sendPaginator(*paginated).await()
+    event.hook.sendAniPaginator(*paginated).await()
 }

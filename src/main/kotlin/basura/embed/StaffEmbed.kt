@@ -1,10 +1,10 @@
 package basura.embed
 
 import basura.*
-import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.Staff
+import basura.paginator.AniPage
 
-fun pagedStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): PaginatedMessage {
+fun pagedStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): AniPage {
     val staffTitle = StringBuilder().apply {
         val native = staff.name?.native
         append(staff.name?.full)
@@ -120,7 +120,7 @@ fun pagedStaffEmbed(staff: Staff, pageNo: Int, pageTotal: Int): PaginatedMessage
         }
     }
 
-    return PaginatedMessage(
+    return AniPage(
         message = Message(embed = staffEmbed),
         urlName = "View on AniList",
         urlHref = staff.siteUrl

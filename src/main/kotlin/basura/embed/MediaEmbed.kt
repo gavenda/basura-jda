@@ -1,8 +1,8 @@
 package basura.embed
 
 import basura.*
-import basura.discord.interaction.PaginatedMessage
 import basura.graphql.anilist.*
+import basura.paginator.AniPage
 
 /**
  * Generates an embed given the media and a user's media list.
@@ -13,7 +13,7 @@ fun pagedMediaEmbed(
     aniToDiscordName: Map<Long, String?>,
     pageNo: Int,
     pageTotal: Int
-): PaginatedMessage {
+): AniPage {
     val season = if (media.season != MediaSeason.UNKNOWN) media.season.displayName else "-"
     val seasonYear = if (media.seasonYear != 0) media.seasonYear else "-"
     val score = media.meanScore.toStars()
@@ -271,7 +271,7 @@ fun pagedMediaEmbed(
         }
     }
 
-    return PaginatedMessage(
+    return AniPage(
         message = Message(embed = mediaEmbed),
         urlName = "View on AniList",
         urlHref = media.siteUrl

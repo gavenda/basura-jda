@@ -2,9 +2,7 @@ package basura.command
 
 import basura.*
 import basura.db.guilds
-import basura.discord.await
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
@@ -14,7 +12,7 @@ import org.ktorm.entity.first
 import java.util.*
 
 suspend fun onSetting(event: SlashCommandEvent) {
-    event.deferReplyAwait(true)
+    event.deferReply(true).await()
 
     // Ensure in guild
     if (event.isDirectMessage) {
@@ -66,7 +64,7 @@ internal suspend fun onSettingCurrent(event: SlashCommandEvent) {
 
 internal suspend fun onSettingHentai(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
-    val display = event.requiredOption("display").asBoolean
+    val display = event.getOption("display")!!.asBoolean
     val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
 
     dbGuild.hentai = display
@@ -77,7 +75,7 @@ internal suspend fun onSettingHentai(event: SlashCommandEvent) {
 
 internal suspend fun onSettingLanguage(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
-    val language = event.requiredOption("language").asString
+    val language = event.getOption("language")!!.asString
     val dbGuild = db.guilds.first { it.discordGuildId eq event.guildContext.guild.idLong }
 
     dbGuild.locale = language

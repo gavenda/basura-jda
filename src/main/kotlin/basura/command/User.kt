@@ -1,11 +1,13 @@
 package basura.command
 
-import basura.*
+import basura.LocaleMessage
+import basura.Log4j2
+import basura.bot
 import basura.db.users
-import basura.discord.await
-import basura.discord.interaction.deferReplyAwait
 import basura.embed.generateUserEmbed
 import basura.graphql.AniList
+import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
@@ -20,7 +22,7 @@ suspend fun onUser(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
     val usernameOpt = event.getOption("username")?.asString?.apply {
         log.debug("Looking up user: $this")
@@ -31,7 +33,7 @@ suspend fun onUser(event: SlashCommandEvent) {
         return
     }
 
-    if(usernameOpt != null) {
+    if (usernameOpt != null) {
         val user = aniList.findUserStatisticsByName(usernameOpt)
 
         if (user == null) {

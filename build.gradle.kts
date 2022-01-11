@@ -8,7 +8,7 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven("https://m2.dv8tion.net/releases")
+    maven("https://jitpack.io/")
 }
 
 group = "basura"
@@ -35,6 +35,7 @@ dependencies {
     implementation("net.dv8tion:JDA:5.0.0-alpha.4") {
         exclude("club.minnced")
     }
+    implementation("com.github.minndevelopment:jda-ktx:d3c6b4d")
 
     // Logging
     implementation("org.apache.logging.log4j:log4j-api:2.17.0")
@@ -60,11 +61,6 @@ tasks {
     compileKotlin {
         kotlinOptions {
             jvmTarget = "17"
-            freeCompilerArgs = listOf(
-                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xuse-experimental=kotlinx.coroutines.DelicateCoroutinesApi",
-                "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi"
-            )
         }
     }
 

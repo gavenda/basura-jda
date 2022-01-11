@@ -4,10 +4,9 @@ import basura.LocaleMessage
 import basura.Log4j2
 import basura.bot
 import basura.db.guilds
-import basura.discord.interaction.deferReplyAwait
-import basura.discord.interaction.requiredOption
 import basura.graphql.AniList
 import basura.sendLocalized
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import org.kodein.di.instance
 import org.ktorm.database.Database
@@ -19,9 +18,9 @@ suspend fun onFind(event: SlashCommandEvent) {
     val db by bot.instance<Database>()
     val aniList by bot.instance<AniList>()
 
-    event.deferReplyAwait()
+    event.deferReply().await()
 
-    val query = event.requiredOption("query").asString.apply {
+    val query = event.getOption("query")!!.asString.apply {
         log.debug("Looking up anime/manga media: $this")
     }
     val allowHentai = if (event.isFromGuild) {
@@ -40,4 +39,3 @@ suspend fun onFind(event: SlashCommandEvent) {
 
     event.sendMediaResults(media, mediaList, aniToDiscordName)
 }
-
