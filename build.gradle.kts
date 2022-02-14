@@ -106,6 +106,10 @@ tasks {
     classes.configure {
         dependsOn(generateVersionProperties)
     }
+
+    getByName("deploy") {
+        dependsOn(getByName("installDist"))
+    }
 }
 
 application {
