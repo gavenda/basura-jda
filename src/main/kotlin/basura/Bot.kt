@@ -22,6 +22,10 @@ import org.ktorm.entity.firstOrNull
 import org.ktorm.support.postgresql.PostgreSqlDialect
 import java.util.*
 import javax.sql.DataSource
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
+val PAGINATOR_TIMEOUT = 300.toDuration(DurationUnit.SECONDS).inWholeMilliseconds
 
 suspend fun main() {
     val bot = ExtensibleBot(env("TOKEN")) {

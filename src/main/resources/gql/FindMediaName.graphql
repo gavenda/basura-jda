@@ -1,0 +1,18 @@
+query ($type: MediaType, $query: String, $allowHentai: Boolean) {
+ Page(perPage: 12) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    media(type: $type, search: $query, isAdult: $allowHentai) {
+      id
+      title {
+        romaji
+        english
+      }
+    }
+  }
+}

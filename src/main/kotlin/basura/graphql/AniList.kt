@@ -20,14 +20,14 @@ interface AniList {
      * Finds a media based on query.
      * @param query query name for media
      */
-    suspend fun findMedia(query: String): List<Media>?
+    suspend fun findMedia(query: String, allowHentai: Boolean = false): List<Media>?
 
     /**
      * Finds a media based on query and type.
      * @param query query name for media
      * @param type type of media
      */
-    suspend fun findMediaByType(query: String, type: MediaType): List<Media>?
+    suspend fun findMediaByType(query: String, type: MediaType, allowHentai: Boolean = false): List<Media>?
 
     /**
      * Finds a media based on its ranking.
@@ -40,8 +40,24 @@ interface AniList {
         amount: Int,
         formatIn: List<MediaFormat>?,
         season: MediaSeason?,
-        seasonYear: Int?
+        seasonYear: Int?,
+        allowHentai: Boolean = false
     ): List<Media>?
+
+    suspend fun findMediaTitles(
+        query: String,
+        type: MediaType? = null,
+    ): List<String>
+
+    suspend fun findCharacterNames(
+        query: String
+    ): List<String>
+
+    suspend fun findStaffNames(
+        query: String
+    ): List<String>
+
+    suspend fun findUserNames(query: String): List<String>
 
     /**
      * Finds an AniList user score based on the given users and medias.

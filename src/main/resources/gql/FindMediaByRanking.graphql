@@ -4,7 +4,8 @@ query(
   $sort: [MediaSort],
   $season: MediaSeason,
   $seasonYear: Int,
-  $formatIn: [MediaFormat]
+  $formatIn: [MediaFormat],
+  $allowHentai: Boolean)
 ) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
@@ -18,7 +19,8 @@ query(
       sort: $sort,
       format_in: $formatIn,
       season: $season,
-      seasonYear: $seasonYear
+      seasonYear: $seasonYear,
+      isAdult: $allowHentai
     ) {
       id
       idMal

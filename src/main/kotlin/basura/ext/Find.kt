@@ -1,9 +1,9 @@
 package basura.ext
 
+import basura.PAGINATOR_TIMEOUT
 import basura.aniListToDiscordNameMap
 import basura.db.guilds
 import basura.embed.createMediaEmbed
-import basura.filterHentai
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaType
 import basura.lookupMediaList
@@ -12,9 +12,10 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.extensions.publicUserCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import kotlinx.coroutines.flow.first
+import com.kotlindiscord.kord.extensions.utils.focusedOption
+import dev.kord.core.behavior.interaction.suggestString
+import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -28,6 +29,8 @@ class Find : Extension() {
     private val aniList by inject<AniList>()
     private val db by inject<Database>()
 
+    private val log = KotlinLogging.logger {  }
+
     override suspend fun setup() {
         publicSlashCommand(::FindArgs) {
             name = "find"
@@ -37,8 +40,7 @@ class Find : Extension() {
                     val guildIdLong = guild!!.id.value.toLong()
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
                 } else false
-                val media = aniList.findMedia(arguments.query)
-                    ?.filterHentai(allowHentai)
+                val media = aniList.findMedia(arguments.query, allowHentai)
 
                 if (media == null) {
                     respond {
@@ -48,6 +50,7 @@ class Find : Extension() {
                     val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
                     val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
                     val paginator = respondingStandardPaginator {
+                        timeoutSeconds = PAGINATOR_TIMEOUT
                         media.forEach {
                             page {
                                 apply(createMediaEmbed(it, mediaList, aniToDiscordName))
@@ -68,8 +71,7 @@ class Find : Extension() {
                     val guildIdLong = guild!!.id.value.toLong()
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
                 } else false
-                val media = aniList.findMediaByType(arguments.query, MediaType.ANIME)
-                    ?.filterHentai(allowHentai)
+                val media = aniList.findMediaByType(arguments.query, MediaType.ANIME, allowHentai)
 
                 if (media == null) {
                     respond {
@@ -79,6 +81,7 @@ class Find : Extension() {
                     val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
                     val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
                     val paginator = respondingStandardPaginator {
+                        timeoutSeconds = PAGINATOR_TIMEOUT
                         media.forEach {
                             page {
                                 apply(createMediaEmbed(it, mediaList, aniToDiscordName))
@@ -99,8 +102,7 @@ class Find : Extension() {
                     val guildIdLong = guild!!.id.value.toLong()
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
                 } else false
-                val media = aniList.findMediaByType(arguments.query, MediaType.MANGA)
-                    ?.filterHentai(allowHentai)
+                val media = aniList.findMediaByType(arguments.query, MediaType.MANGA, allowHentai)
 
                 if (media == null) {
                     respond {
@@ -110,6 +112,7 @@ class Find : Extension() {
                     val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
                     val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
                     val paginator = respondingStandardPaginator {
+                        timeoutSeconds = PAGINATOR_TIMEOUT
                         media.forEach {
                             page {
                                 apply(createMediaEmbed(it, mediaList, aniToDiscordName))
@@ -129,8 +132,7 @@ class Find : Extension() {
                     val guildIdLong = guild!!.id.value.toLong()
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
                 } else false
-                val media = aniList.findMedia(targetMessages.first().content)
-                    ?.filterHentai(allowHentai)
+                val media = aniList.findMedia(targetMessages.first().content, allowHentai)
 
                 if (media == null) {
                     respond {
@@ -140,6 +142,7 @@ class Find : Extension() {
                     val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
                     val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
                     val paginator = respondingStandardPaginator {
+                        timeoutSeconds = PAGINATOR_TIMEOUT
                         media.forEach {
                             page {
                                 apply(createMediaEmbed(it, mediaList, aniToDiscordName))
@@ -157,6 +160,17 @@ class Find : Extension() {
         val query by string {
             name = "query"
             description = "Name of the anime/manga."
+            autoComplete {
+                if (!focusedOption.focused) return@autoComplete
+                val typed = focusedOption.value as String
+                val mediaTitles = aniList.findMediaTitles(typed).take(25)
+
+                suggestString {
+                    for (media in mediaTitles) {
+                        choice(media, media)
+                    }
+                }
+            }
         }
     }
 
@@ -164,6 +178,18 @@ class Find : Extension() {
         val query by string {
             name = "query"
             description = "Name of the anime."
+
+            autoComplete {
+                if (!focusedOption.focused) return@autoComplete
+                val typed = focusedOption.value as String
+                val mediaTitles = aniList.findMediaTitles(typed, MediaType.ANIME).take(25)
+
+                suggestString {
+                    for (media in mediaTitles) {
+                        choice(media, media)
+                    }
+                }
+            }
         }
     }
 
@@ -171,6 +197,18 @@ class Find : Extension() {
         val query by string {
             name = "query"
             description = "Name of the manga."
+
+            autoComplete {
+                if (!focusedOption.focused) return@autoComplete
+                val typed = focusedOption.value as String
+                val mediaTitles = aniList.findMediaTitles(typed, MediaType.MANGA).take(25)
+
+                suggestString {
+                    for (media in mediaTitles) {
+                        choice(media, media)
+                    }
+                }
+            }
         }
     }
 }

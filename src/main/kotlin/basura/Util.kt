@@ -126,18 +126,6 @@ fun Int.toStars(): String {
 }
 
 /**
- * Filter hentai from a list of medias.
- */
-internal fun List<Media>.filterHentai(allowHentai: Boolean): List<Media> {
-    if (allowHentai) return this
-    return filter {
-        it.genres.any { genre ->
-            genre == "Hentai" || genre == "Yuri" || genre == "Yaoi"
-        }.not()
-    }
-}
-
-/**
  * Map AniList identifier to the proper discord name
  */
 internal suspend fun aniListToDiscordNameMap(guild: Guild?): Map<Long, String?> {

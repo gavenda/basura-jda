@@ -106,6 +106,8 @@ fun createMediaEmbed(
         append("\n")
         append(actualDescription)
     }
+        .abbreviate(EmbedBuilder.Limits.description)
+        .dropLastWhile { it != '\n' }
 
     thumbnail {
         url = media.coverImage?.extraLarge ?: ""

@@ -1,7 +1,7 @@
 package basura.ext
 
+import basura.PAGINATOR_TIMEOUT
 import basura.db.guilds
-import basura.filterHentai
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaFormat
 import basura.graphql.anilist.MediaSeason
@@ -13,7 +13,6 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.types.respondingPaginator
 import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -44,8 +43,9 @@ class Ranking : Extension() {
                     amount = arguments.amount,
                     formatIn = listOf(mediaFormat),
                     season = mediaSeason,
-                    seasonYear = arguments.year
-                )?.filterHentai(allowHentai)
+                    seasonYear = arguments.year,
+                    allowHentai
+                )
 
                 if (media == null) {
                     respond {
@@ -55,6 +55,7 @@ class Ranking : Extension() {
                     val mediaList = basura.lookupMediaList(media, guild?.id?.value?.toLong())
                     val aniToDiscordName = basura.aniListToDiscordNameMap(guild?.fetchGuildOrNull())
                     val paginator = respondingStandardPaginator {
+                        timeoutSeconds = PAGINATOR_TIMEOUT
                         media.forEach {
                             page {
                                 apply(basura.embed.createMediaEmbed(it, mediaList, aniToDiscordName))

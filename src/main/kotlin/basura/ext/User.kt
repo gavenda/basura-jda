@@ -12,6 +12,8 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicUserCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import com.kotlindiscord.kord.extensions.utils.focusedOption
+import dev.kord.core.behavior.interaction.suggestString
 import dev.kord.rest.builder.message.create.embed
 import org.koin.core.component.inject
 import org.ktorm.database.Database
@@ -156,6 +158,18 @@ class User : Extension() {
         val username by optionalString {
             name = "username"
             description = "AniList username, defaults to your own if linked."
+
+            autoComplete {
+                if (!focusedOption.focused) return@autoComplete
+                val typed = focusedOption.value as String
+                val usernames = aniList.findUserNames(typed).take(25)
+
+                suggestString {
+                    for (username in usernames) {
+                        choice(username, username)
+                    }
+                }
+            }
         }
     }
 

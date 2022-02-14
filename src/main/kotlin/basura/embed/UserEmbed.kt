@@ -130,7 +130,10 @@ fun createUserEmbed(user: basura.graphql.anilist.User): EmbedBuilder.() -> Unit 
             
             [**Weab Tendencies**](${user.siteUrl}/stats/anime/overview)
             $weabTendencies
-        """.trim().trimIndent()
+        """
+        .trim()
+        .trimIndent()
+        .abbreviate(EmbedBuilder.Limits.description)
 
     title = "${user.name}${apostrophe} Statistics"
     description = userDescription.abbreviate(EmbedBuilder.Limits.description)

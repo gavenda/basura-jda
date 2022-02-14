@@ -21,16 +21,16 @@ class AniListGraphQL : AniList {
         return result.User
     }
 
-    override suspend fun findMedia(query: String): List<Media>? {
+    override suspend fun findMedia(query: String, allowHentai: Boolean): List<Media>? {
         val gqlQuery = findResourceAsText("/gql/FindMedia.graphql")
-        val variables = FindMedia(query)
+        val variables = FindMedia(query, allowHentai = allowHentai)
         val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.media
     }
 
-    override suspend fun findMediaByType(query: String, type: MediaType): List<Media>? {
+    override suspend fun findMediaByType(query: String, type: MediaType, allowHentai: Boolean): List<Media>? {
         val gqlQuery = findResourceAsText("/gql/FindMediaByType.graphql")
-        val variables = FindMedia(query, type)
+        val variables = FindMedia(query, type, allowHentai = allowHentai)
         val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.media
     }
@@ -39,7 +39,8 @@ class AniListGraphQL : AniList {
         amount: Int,
         formatIn: List<MediaFormat>?,
         season: MediaSeason?,
-        seasonYear: Int?
+        seasonYear: Int?,
+        allowHentai: Boolean
     ): List<Media>? {
         val gqlQuery = findResourceAsText("/gql/FindMediaByRanking.graphql")
         val variables = FindMedia(
@@ -47,10 +48,63 @@ class AniListGraphQL : AniList {
             sort = listOf(MediaSort.SCORE_DESC),
             formatIn = formatIn,
             season = season,
-            seasonYear = seasonYear
+            seasonYear = seasonYear,
+            allowHentai = allowHentai
         )
         val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.media
+    }
+
+    override suspend fun findMediaTitles(query: String, type: MediaType?): List<String> {
+        val gqlQuery = findResourceAsText("/gql/FindMediaName.graphql")
+        val variables = FindMedia(
+            query = query,
+            type = type
+        )
+        val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
+        return buildList {
+            result.Page?.media?.forEach {
+                it.title?.native?.let { title -> add(title) }
+                it.title?.romaji?.let { title -> add(title) }
+            }
+        }.distinct()
+    }
+
+    override suspend fun findCharacterNames(query: String): List<String> {
+        val gqlQuery = findResourceAsText("/gql/FindCharacterName.graphql")
+        val variables = Find(query)
+        val result = gqlQuery<Find, PageResult>(graphUri, gqlQuery, variables)
+        return buildList {
+            result.Page?.characters?.forEach {
+                it.name?.native?.let { title -> add(title) }
+                it.name?.alternative?.let { titles -> addAll(titles.filterNotNull()) }
+                it.name?.full?.let { title -> add(title) }
+            }
+        }.distinct()
+    }
+
+    override suspend fun findStaffNames(query: String): List<String> {
+        val gqlQuery = findResourceAsText("/gql/FindStaffName.graphql")
+        val variables = Find(query)
+        val result = gqlQuery<Find, PageResult>(graphUri, gqlQuery, variables)
+        return buildList {
+            result.Page?.staff?.forEach {
+                it.name?.native?.let { title -> add(title) }
+                it.name?.alternative?.let { titles -> addAll(titles.filterNotNull()) }
+                it.name?.full?.let { title -> add(title) }
+            }
+        }.distinct()
+    }
+
+    override suspend fun findUserNames(query: String): List<String> {
+        val gqlQuery = findResourceAsText("/gql/FindUserName.graphql")
+        val variables = Find(query)
+        val result = gqlQuery<Find, PageResult>(graphUri, gqlQuery, variables)
+        return buildList {
+            result.Page?.users?.forEach {
+                add(it.name)
+            }
+        }
     }
 
     override suspend fun findScoreByUsersAndMedias(userIds: List<Long>?, mediaIds: List<Long>?): List<MediaList>? {
@@ -83,7 +137,7 @@ class AniListGraphQL : AniList {
     data class Find(
         val query: String? = null,
         val page: Int = 1,
-        val perPage: Int = 20,
+        val perPage: Int = 10,
     )
 
     @Serializable
@@ -91,11 +145,12 @@ class AniListGraphQL : AniList {
         val query: String? = null,
         val type: MediaType? = null,
         val page: Int = 1,
-        val perPage: Int = 20,
+        val perPage: Int = 10,
         val sort: List<MediaSort>? = null,
         val formatIn: List<MediaFormat>? = null,
         val season: MediaSeason? = null,
-        val seasonYear: Int? = null
+        val seasonYear: Int? = null,
+        val allowHentai: Boolean = false
     )
 
     @Serializable
@@ -103,7 +158,7 @@ class AniListGraphQL : AniList {
         val userId: List<Long>?,
         val mediaId: List<Long>?,
         val page: Int = 1,
-        val perPage: Int = 20
+        val perPage: Int = 10
     )
 
     @Serializable
