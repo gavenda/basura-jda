@@ -16,6 +16,9 @@ task deploy {
     doLast {
         ssh.run {
             session(remotes.raspi) {
+                remove '/bot/basura/bin', '/bot/basura/lib', fileTransfer: 'scp'
+            }
+            session(remotes.raspi) {
                 put from: "$buildDir/install/basura", into: '/bot', fileTransfer: 'scp'
             }
             session(remotes.raspiAdmin) {
