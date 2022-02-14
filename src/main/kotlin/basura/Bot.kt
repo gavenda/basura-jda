@@ -12,7 +12,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.logging.*
 import kotlinx.serialization.json.Json
 import org.flywaydb.core.Flyway
 import org.koin.core.component.inject
