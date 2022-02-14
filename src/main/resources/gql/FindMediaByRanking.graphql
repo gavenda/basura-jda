@@ -5,7 +5,7 @@ query(
   $season: MediaSeason,
   $seasonYear: Int,
   $formatIn: [MediaFormat],
-  $allowHentai: Boolean
+  $genreNotIn: [String]
 ) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
@@ -20,7 +20,7 @@ query(
       format_in: $formatIn,
       season: $season,
       seasonYear: $seasonYear,
-      isAdult: $allowHentai
+      genre_not_in: $genreNotIn
     ) {
       id
       idMal

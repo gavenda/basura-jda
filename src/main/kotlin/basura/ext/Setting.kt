@@ -47,7 +47,7 @@ class Setting : Extension() {
                             description = translate("setting.embed.description")
 
                             thumbnail {
-                                url = guild!!.fetchGuild().getIconUrl(Image.Format.PNG).toString()
+                                url = guild!!.fetchGuild().getIconUrl(Image.Format.GIF).toString()
                             }
 
                             field {

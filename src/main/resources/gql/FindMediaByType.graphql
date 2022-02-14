@@ -1,4 +1,4 @@
-query($page: Int, $perPage: Int, $query: String, $type: MediaType, $allowHentai: Boolean) {
+query($page: Int, $perPage: Int, $query: String, $type: MediaType, $genreNotIn: [String]) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
       total
@@ -7,7 +7,7 @@ query($page: Int, $perPage: Int, $query: String, $type: MediaType, $allowHentai:
       hasNextPage
       perPage
     }
-    media(search: $query, type: $type, isAdult: $allowHentai) {
+    media(search: $query, type: $type, genre_not_in: $genreNotIn) {
       id
       idMal
       title {

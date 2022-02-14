@@ -13,6 +13,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -25,6 +26,7 @@ class Ranking : Extension() {
 
     private val aniList by inject<AniList>()
     private val db by inject<Database>()
+    private val log = KotlinLogging.logger {  }
 
     override suspend fun setup() {
         publicSlashCommand(::RankingArgs) {
