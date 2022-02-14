@@ -1,66 +1,92 @@
 import java.util.Properties
+import com.expediagroup.graphql.plugin.gradle.config.GraphQLSerializer
+import com.expediagroup.graphql.plugin.gradle.graphql
 
 plugins {
     application
+    idea
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.serialization") version "1.6.10"
+    id("com.expediagroup.graphql") version "5.3.2"
+    id("org.hidetake.ssh") version "2.10.1"
 }
 
 repositories {
+    google()
     mavenCentral()
-    maven("https://jitpack.io/")
+
+    maven {
+        name = "Sonatype Snapshots"
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+    }
+
+    maven {
+        name = "Kotlin Discord"
+        url = uri("https://maven.kotlindiscord.com/repository/maven-public/")
+    }
+
+    maven {
+        name = "Dv8tion Releases"
+        url = uri("https://m2.dv8tion.net/releases")
+    }
+
+    maven {
+        name = "DRSchlaubi Releases"
+        url = uri("https://schlaubi.jfrog.io/artifactory/lavakord")
+    }
 }
 
 group = "basura"
-version = "1.1-SNAPSHOT"
+version = "2.0"
 
 dependencies {
-    // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-
-    // Kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
-
-    // For GraphQL
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-
-    // Jackson
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-
-    // Dependency Injection
-    implementation("org.kodein.di:kodein-di:7.10.0")
-
-    // Discord API
-    implementation("net.dv8tion:JDA:5.0.0-alpha.4") {
-        exclude("club.minnced")
-    }
-    implementation("com.github.minndevelopment:jda-ktx:d3c6b4d")
-
-    // Logging
-    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
-    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.0")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kord.extensions)
 
     // HTML to Markdown
     implementation("io.github.furstenheim:copy_down:1.0")
 
+    // Logging dependencies
+    implementation(libs.groovy)
+    implementation(libs.logback)
+    implementation(libs.logging)
+
     // DB
-    implementation("org.ktorm:ktorm-core:3.4.1") // ORM
-    implementation("com.zaxxer:HikariCP:5.0.0") // Pool
-    implementation("org.postgresql:postgresql:42.3.1") // DB
-    implementation("org.flywaydb:flyway-core:8.3.0") // Migration
+    implementation(libs.ktorm) // ORM
+    implementation(libs.ktorm.postgresql) // ORM
+    implementation(libs.hikari) // Pool
+    implementation(libs.postgresql) // DB
+    implementation(libs.flyway) // Migration
 }
 
+val generatedSourcesPath = file("build/generated")
+
 java {                                      
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
+
+kotlin {
+    sourceSets["main"].kotlin.srcDir(generatedSourcesPath)
+}
+
+idea {
+    module {
+        generatedSourceDirs.add(generatedSourcesPath)
+    }
+}
+
+apply(from = "ssh.gradle")
 
 tasks {
     compileKotlin {
         kotlinOptions {
-            jvmTarget = "17"
+            jvmTarget = "11"
+            freeCompilerArgs = listOf(
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xopt-in=dev.kord.gateway.PrivilegedIntent",
+                "-Xopt-in=org.koin.core.annotation.KoinReflectAPI"
+            )
         }
     }
 
@@ -83,5 +109,5 @@ tasks {
 }
 
 application {
-    mainClass.set( "basura.MainKt")
+    mainClass.set("basura.BotKt")
 }

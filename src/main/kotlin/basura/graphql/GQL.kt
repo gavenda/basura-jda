@@ -1,33 +1,30 @@
 package basura.graphql
 
-import basura.bot
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.kodein.di.instance
+import org.koin.java.KoinJavaComponent.inject
 
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend inline fun <reified V, reified R> gqlQuery(graphUrl: String, query: String, variables: V): R {
-    val json by bot.instance<Json>()
-    val client by bot.instance<OkHttpClient>()
+    val json by inject<Json>(Json::class.java)
+    val client by inject<HttpClient>(HttpClient::class.java)
     val gqlRequest = GQLRequest(query, variables)
     val requestBody = json.encodeToString(gqlRequest)
-        .toRequestBody()
-    val request = Request.Builder()
-        .url(graphUrl)
-        .addHeader("Content-Type", "application/json")
-        .post(requestBody)
-        .build()
 
-    val response = client.newCall(request).await()
-    val responseBody = withContext(Dispatchers.IO) {
-        response.body!!.string()
+    val response = client.request<HttpResponse>(graphUrl) {
+        method = HttpMethod.Post
+        headers {
+            append(HttpHeaders.ContentType, "application/json")
+        }
+        body = requestBody
     }
+    val responseBody = response.receive<String>()
     val gqlResponse = json.decodeFromString<GQLResponse<R>>(responseBody)
 
     return gqlResponse.data

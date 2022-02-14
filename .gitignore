@@ -11,7 +11,10 @@ build
 .env
 
 # Ignore debugging log files
-logs
+log
 
 # Ignore cache
 /cache
+
+# Ignore ssh key or passwords
+ssh

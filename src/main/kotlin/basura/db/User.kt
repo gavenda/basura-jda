@@ -7,8 +7,8 @@ import org.ktorm.schema.Table
 import org.ktorm.schema.long
 import org.ktorm.schema.varchar
 
-interface User : Entity<User> {
-    companion object : Entity.Factory<User>()
+interface DbUser : Entity<DbUser> {
+    companion object : Entity.Factory<DbUser>()
 
     val id: Long
     var discordId: Long
@@ -17,7 +17,7 @@ interface User : Entity<User> {
     var aniListUsername: String
 }
 
-object Users : Table<User>("user") {
+object DbUsers : Table<DbUser>("user") {
     val id = long("id").primaryKey().bindTo { it.id }
     val discordId = long("discord_id").bindTo { it.discordId }
     val discordGuildId = long("discord_guild_id").bindTo { it.discordGuildId }
@@ -25,19 +25,19 @@ object Users : Table<User>("user") {
     val aniListUsername = varchar("anilist_username").bindTo { it.aniListUsername }
 }
 
-interface UserLocale : Entity<UserLocale> {
-    companion object : Entity.Factory<UserLocale>()
+interface DbUserLocale : Entity<DbUserLocale> {
+    companion object : Entity.Factory<DbUserLocale>()
 
     val id: Long
     var discordId: Long
     var locale: String
 }
 
-object UserLocales : Table<UserLocale>("user_locale") {
+object DbUserLocales : Table<DbUserLocale>("user_locale") {
     val id = long("id").primaryKey().bindTo { it.id }
     val discordId = long("discord_id").bindTo { it.discordId }
     val locale = varchar("locale").bindTo { it.locale }
 }
 
-val Database.users get() = this.sequenceOf(Users)
-val Database.userLocales get() = this.sequenceOf(UserLocales)
+val Database.users get() = this.sequenceOf(DbUsers)
+val Database.userLocales get() = this.sequenceOf(DbUserLocales)

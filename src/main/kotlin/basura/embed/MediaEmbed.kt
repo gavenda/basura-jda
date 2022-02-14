@@ -1,19 +1,18 @@
 package basura.embed
 
-import basura.*
+import basura.EmbedMedia
+import basura.abbreviate
 import basura.graphql.anilist.*
-import basura.paginator.AniPage
+import basura.htmlClean
+import basura.toStars
+import dev.kord.common.Color
+import dev.kord.rest.builder.message.EmbedBuilder
 
-/**
- * Generates an embed given the media and a user's media list.
- */
-fun pagedMediaEmbed(
+fun createMediaEmbed(
     media: Media,
     mediaList: List<MediaList>?,
     aniToDiscordName: Map<Long, String?>,
-    pageNo: Int,
-    pageTotal: Int
-): AniPage {
+): EmbedBuilder.() -> Unit = {
     val season = if (media.season != MediaSeason.UNKNOWN) media.season.displayName else "-"
     val seasonYear = if (media.seasonYear != 0) media.seasonYear else "-"
     val score = media.meanScore.toStars()
@@ -91,189 +90,177 @@ fun pagedMediaEmbed(
         duration += " per episode"
     }
 
-    val mediaDescription = StringBuilder()
+    title = media.title?.english ?: media.title?.romaji
+    description = buildString {
+        if (media.title?.romaji != null && media.title.english != null) {
+            append("_(Romaji: ${media.title.romaji})_\n")
+        }
+        if (media.title?.native != null) {
+            append("_(Native: ${media.title.native})_\n")
+        }
 
-    if (media.title?.romaji != null && media.title.english != null) {
-        mediaDescription.append("_(Romaji: ${media.title.romaji})_\n")
+        val actualDescription = media.description
+            .htmlClean()
+            .abbreviate(EmbedBuilder.Limits.description)
+
+        append("\n")
+        append(actualDescription)
     }
-    if (media.title?.native != null) {
-        mediaDescription.append("_(Native: ${media.title.native})_\n")
+
+    thumbnail {
+        url = media.coverImage?.extraLarge ?: ""
     }
 
-    val actualDescription = media.description
-        .htmlClean()
-        .abbreviate(DESCRIPTION_LIMIT)
+    url = media.siteUrl
+    color = Color(0xFF0000)
 
-    mediaDescription.append("\n")
-    mediaDescription.append(actualDescription)
+    // First row
+    field {
+        name = "Type"
+        value = media.type.displayName
+        inline = true
+    }
+    field {
+        name = "Status"
+        value = media.status.displayName
+        inline = true
+    }
 
-    val mediaEmbed = Embed {
-        title = media.title?.english ?: media.title?.romaji
-        description = mediaDescription.toString()
-        thumbnail = media.coverImage?.extraLarge
-        url = media.siteUrl
-        color = 0xFF0000
-
-        // First row
+    if (season == "-" && seasonYear == "-") {
         field {
-            name = "Type"
-            value = media.type.displayName
+            name = "Season"
+            value = "?"
             inline = true
         }
+    } else {
         field {
-            name = "Status"
-            value = media.status.displayName
+            name = "Season"
+            value = "$season $seasonYear"
             inline = true
         }
+    }
 
-        if (season == "-" && seasonYear == "-") {
-            field {
-                name = "Season"
-                value = "?"
-                inline = true
+    // Second row
+    field {
+        name = "Rating"
+        value = "$score (${media.meanScore})"
+        inline = true
+    }
+    field {
+        name = "Popularity"
+        value = "${media.popularity}"
+        inline = true
+    }
+    field {
+        name = "Favorites"
+        value = "${media.favourites}"
+        inline = true
+    }
+
+    // Third row
+    field {
+        name = "Episodes"
+        value = episodes
+        inline = true
+    }
+    field {
+        name = "Duration"
+        value = duration
+        inline = true
+    }
+    field {
+        name = "Format"
+        value = media.format.displayName
+        inline = true
+    }
+
+    if (media.genres.isNotEmpty()) {
+        // Fourth row
+        field {
+            name = "Genres"
+            value = media.genres.joinToString(
+                separator = " - "
+            ) {
+                "`$it`"
             }
-        } else {
-            field {
-                name = "Season"
-                value = "$season $seasonYear"
-                inline = true
-            }
+            inline = false
         }
+    }
 
-        // Second row
+    // User scores
+    if (inProgress.isNotBlank()) {
         field {
-            name = "Rating"
-            value = "$score (${media.meanScore})"
-            inline = true
+            name = "In Progress"
+            value = inProgress.toString()
+            inline = false
         }
-        field {
-            name = "Popularity"
-            value = "${media.popularity}"
-            inline = true
-        }
-        field {
-            name = "Favorites"
-            value = "${media.favourites}"
-            inline = true
-        }
+    }
 
-        // Third row
+    if (repeating.isNotBlank()) {
         field {
-            name = "Episodes"
-            value = episodes
-            inline = true
+            name = "Rewatching"
+            value = repeating.toString()
+            inline = false
         }
-        field {
-            name = "Duration"
-            value = duration
-            inline = true
-        }
-        field {
-            name = "Format"
-            value = media.format.displayName
-            inline = true
-        }
+    }
 
-        if (media.genres.isNotEmpty()) {
-            // Fourth row
-            field {
-                name = "Genres"
-                value = media.genres.joinToString(
-                    separator = " - "
-                ) {
-                    "`$it`"
+    if (completed.isNotBlank()) {
+        field {
+            name = "Completed"
+            value = completed.toString()
+            inline = false
+        }
+    }
+
+    if (dropped.isNotBlank()) {
+        field {
+            name = "Dropped"
+            value = dropped.toString()
+            inline = false
+        }
+    }
+
+    if (planned.isNotBlank()) {
+        field {
+            name = "Planned"
+            value = planned.toString()
+            inline = false
+        }
+    }
+
+    if (notOnList.isNotBlank()) {
+        field {
+            name = "Not On List"
+            value = notOnList.toString()
+            inline = false
+        }
+    }
+
+    author {
+        name = buildString {
+            val mediaRankAscending = media.rankings
+                .sortedBy { it.rank }
+
+            val allTimeRank = mediaRankAscending
+                .firstOrNull {
+                    it.type == MediaRankType.RATED && it.allTime
                 }
-                inline = false
+            val seasonRank = mediaRankAscending
+                .firstOrNull {
+                    it.type == MediaRankType.RATED && !it.allTime && it.season != MediaSeason.UNKNOWN
+                }
+
+            if (allTimeRank != null) {
+                append("Rank #${allTimeRank.rank} (${media.format.displayName})")
             }
-        }
+            if (seasonRank != null) {
+                if (allTimeRank != null) {
+                    append(" ${Typography.bullet} ")
+                }
 
-        // User scores
-        if (inProgress.isNotEmpty()) {
-            field {
-                name = "In Progress"
-                value = inProgress.toString()
-                inline = false
-            }
-        }
-
-        if (repeating.isNotEmpty()) {
-            field {
-                name = "Rewatching"
-                value = repeating.toString()
-                inline = false
-            }
-        }
-
-        if (completed.isNotEmpty()) {
-            field {
-                name = "Completed"
-                value = completed.toString()
-                inline = false
-            }
-        }
-
-        if (dropped.isNotEmpty()) {
-            field {
-                name = "Dropped"
-                value = dropped.toString()
-                inline = false
-            }
-        }
-
-        if (planned.isNotEmpty()) {
-            field {
-                name = "Planned"
-                value = planned.toString()
-                inline = false
-            }
-        }
-
-        if (notOnList.isNotEmpty()) {
-            field {
-                name = "Not On List"
-                value = notOnList.toString()
-                inline = false
-            }
-        }
-
-        val mediaRank = StringBuilder()
-        val mediaRankAscending = media.rankings
-            .sortedBy { it.rank }
-
-        val allTimeRank = mediaRankAscending
-            .firstOrNull {
-                it.type == MediaRankType.RATED && it.allTime
-            }
-        val seasonRank = mediaRankAscending
-            .firstOrNull {
-                it.type == MediaRankType.RATED && !it.allTime && it.season != MediaSeason.UNKNOWN
-            }
-
-        if (allTimeRank != null) {
-            mediaRank.append("Rank #${allTimeRank.rank} (${media.format.displayName}) ${Typography.bullet} ")
-        }
-        if (seasonRank != null) {
-            mediaRank.append("Rank #${seasonRank.rank} (${media.format.displayName}) of ${seasonRank.season.displayName} ${seasonRank.year} ${Typography.bullet} ")
-        }
-
-        // Add ranking info
-        if (mediaRank.isNotEmpty()) {
-            author {
-                name = mediaRank.toString().dropLast(3)
-            }
-        }
-
-        if (pageTotal > 1) {
-            // Add page number
-            footer {
-                name = "Page $pageNo of $pageTotal"
+                append("Rank #${seasonRank.rank} (${media.format.displayName}) of ${seasonRank.season.displayName} ${seasonRank.year}")
             }
         }
     }
-
-    return AniPage(
-        message = Message(embed = mediaEmbed),
-        urlName = "View on AniList",
-        urlHref = media.siteUrl
-    )
 }
+

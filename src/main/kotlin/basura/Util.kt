@@ -1,13 +1,17 @@
 package basura
 
-import basura.cache.ConcurrentCache
-import basura.cache.TimedCache
-import dev.minn.jda.ktx.await
+import basura.db.users
+import basura.graphql.AniList
+import basura.graphql.anilist.Media
+import dev.kord.common.Color
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.entity.Guild
 import io.github.furstenheim.CopyDown
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.PrivateChannel
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import java.util.*
+import org.koin.java.KoinJavaComponent.inject
+import org.ktorm.database.Database
+import org.ktorm.dsl.eq
+import org.ktorm.entity.filter
+import org.ktorm.entity.map
 
 /**
  * Loads any file in resources and returns them as a string.
@@ -17,75 +21,8 @@ fun findResourceAsText(path: String): String {
 }
 
 /**
- * Backing field for cache.
+ * Abbreviates the string based on the given max.
  */
-private val messageContextCache = TimedCache(ConcurrentCache<SlashCommandEvent, MessageContext>())
-
-/**
- * Returns the message context of this slash command.
- */
-val SlashCommandEvent.messageContext get() = messageContextCache.getOrPut(this) {
-    Messages.withContext(user, guild)
-}
-
-/**
- * Send a localized message.
- */
-suspend fun SlashCommandEvent.sendLocalized(key: String, ephemeral: Boolean = false): Message =
-    hook.sendMessage(messageContext.get(key))
-        .setEphemeral(ephemeral)
-        .await()
-
-/**
- * Send a localized message.
- */
-suspend fun SlashCommandEvent.sendLocalizedFormat(key: String, vararg args: Array<String>): Message =
-    hook.sendMessage(messageContext.get(key))
-        .await()
-
-/**
- * Delete the messages in bulk.
- * @param messages messages to delete
- */
-suspend fun PrivateChannel.deleteMessages(messages: List<Message>) {
-    val messageIds = messages.map { it.idLong }
-    val sortedMessageIds = TreeSet<Long>(Comparator.reverseOrder()).apply {
-        addAll(messageIds)
-    }
-
-    sortedMessageIds.forEach {
-        deleteMessageById(it).await()
-    }
-}
-
-fun Boolean.toYesNo(): String {
-    if (this) return "Yes"
-    return "No"
-}
-
-/**
- * Cleans down any html and converts them into a Markdown format.
- */
-fun String.htmlClean(): String {
-    val converter = CopyDown()
-    return converter.convert(this)
-}
-
-fun String.weirdHtmlClean(): String {
-    return this
-        .replace("<i>", "_")
-        .replace("</i>", "_")
-        .replace("<b>", "**")
-        .replace("</b>", "**")
-}
-
-fun StringBuilder.appendIfNotMax(text: String, max: Int) {
-    val sum = length + text.length
-    if (sum < max) {
-        append(text)
-    }
-}
-
 fun String.abbreviate(max: Int): String {
     if (length <= max) return this
     return take(max).substring(0, max - 3) + Typography.ellipsis
@@ -102,17 +39,48 @@ fun String.aniClean(): String {
 }
 
 /**
+ * Cleans down any html and converts them into a Markdown format.
+ */
+fun String.htmlClean(): String {
+    val converter = CopyDown()
+    return converter.convert(this)
+}
+
+/**
+ * Cleans down any weird html from anilist and converts them into a Markdown format.
+ */
+fun String.weirdHtmlClean(): String {
+    return this
+        .replace("<i>", "_")
+        .replace("</i>", "_")
+        .replace("<b>", "**")
+        .replace("</b>", "**")
+}
+
+/**
  * Converts AniList colors to their appropriate hex color.
  */
 fun String.toHexColor() = when (this) {
-    "blue" -> 0x3DB4F2
-    "purple" -> 0xC063FF
-    "green" -> 0x4CCA51
-    "orange" -> 0xEF881A
-    "red" -> 0xE13333
-    "pink" -> 0xFC9DD6
-    "gray" -> 0x677B94
-    else -> 0x000000
+    "blue" -> Color(0x3DB4F2)
+    "purple" -> Color(0xC063FF)
+    "green" -> Color(0x4CCA51)
+    "orange" -> Color(0xEF881A)
+    "red" -> Color(0xE13333)
+    "pink" -> Color(0xFC9DD6)
+    "gray" -> Color(0x677B94)
+    else -> Color(0x000000)
+}
+
+fun Boolean.toYesNo(): String {
+    if (this) return "Yes"
+    return "No"
+}
+
+fun StringBuilder.appendIfNotMax(text: String, max: Int) {
+    val sum = length + text.length
+    if (sum < max) {
+        append(text)
+    }
 }
 
 /**
@@ -155,4 +123,41 @@ fun Int.toStars(): String {
         return "★".repeat(1)
     }
     return "-"
+}
+
+/**
+ * Filter hentai from a list of medias.
+ */
+internal fun List<Media>.filterHentai(allowHentai: Boolean): List<Media> {
+    if (allowHentai) return this
+    return filter {
+        it.genres.any { genre ->
+            genre == "Hentai" || genre == "Yuri" || genre == "Yaoi"
+        }.not()
+    }
+}
+
+/**
+ * Map AniList identifier to the proper discord name
+ */
+internal suspend fun aniListToDiscordNameMap(guild: Guild?): Map<Long, String?> {
+    val db by inject<Database>(Database::class.java)
+    if (guild == null) return mapOf()
+    return db.users
+        .filter { it.discordGuildId eq guild.id.value.toLong() }
+        .map {
+            it.aniListId to guild.getMember(Snowflake(it.discordId)).displayName
+        }.toMap()
+}
+
+internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<basura.graphql.anilist.MediaList>? {
+    val db by inject<Database>(Database::class.java)
+    val aniList by inject<AniList>(AniList::class.java)
+
+    return aniList.findScoreByUsersAndMedias(
+        userIds = db.users
+            .filter { it.discordGuildId eq (guildId ?: -1) }
+            .map { it.aniListId },
+        mediaIds = medias?.map { it.id }
+    )
 }

@@ -1,93 +1,122 @@
 package basura
 
+import basura.db.guilds
+import basura.db.userLocales
+import basura.ext.*
 import basura.graphql.AniList
 import basura.graphql.AniListGraphQL
+import com.kotlindiscord.kord.extensions.ExtensibleBot
+import com.kotlindiscord.kord.extensions.utils.env
+import com.kotlindiscord.kord.extensions.utils.loadModule
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.minn.jda.ktx.createJDA
-import dev.minn.jda.ktx.default
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import kotlinx.serialization.json.Json
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.OnlineStatus
-import net.dv8tion.jda.api.requests.GatewayIntent
-import net.dv8tion.jda.api.utils.cache.CacheFlag
-import okhttp3.Cache
-import okhttp3.OkHttpClient
-import org.kodein.di.DI
-import org.kodein.di.bind
-import org.kodein.di.instance
-import org.kodein.di.singleton
+import org.flywaydb.core.Flyway
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 import org.ktorm.database.Database
-import java.io.File
+import org.ktorm.dsl.eq
+import org.ktorm.entity.firstOrNull
+import org.ktorm.support.postgresql.PostgreSqlDialect
 import java.util.*
 import javax.sql.DataSource
 
-/**
- * Main bot module.
- */
-val bot = DI {
-    bind<DataSource>() with singleton {
-        val config = HikariConfig()
+suspend fun main() {
+    val bot = ExtensibleBot(env("TOKEN")) {
+        i18n {
+            defaultLocale = Locale.ENGLISH
+            localeResolver { guild, _, user ->
+                val db by inject<Database>(Database::class.java)
 
-        config.jdbcUrl = Environment.DB_URL
-        config.username = Environment.DB_USER
-        config.password = Environment.DB_PASS
+                if (user != null) {
+                    val userIdLong = user.id.value.toLong()
+                    val localeStr = db.userLocales.firstOrNull { it.discordId eq userIdLong }?.locale
+                    if (localeStr != null) {
+                        return@localeResolver Locale.forLanguageTag(localeStr)
+                    } else {
+                        return@localeResolver Locale.getDefault()
+                    }
+                }
 
-        HikariDataSource(config)
-    }
-    bind<Database>() with singleton {
-        val dataSource by di.instance<DataSource>()
+                if (guild != null) {
+                    val guildIdLong = guild.id.value.toLong()
+                    val localeStr = db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.locale
 
-        Database.connect(dataSource)
-    }
-    bind<OkHttpClient>() with singleton {
-        val cacheDir = File("cache")
-        val cacheSize: Long = (1024 * 1024) * 5 // 5MB cache
+                    if (localeStr != null) {
+                        return@localeResolver Locale.forLanguageTag(localeStr)
+                    } else {
+                        return@localeResolver Locale.getDefault()
+                    }
+                }
 
-        OkHttpClient.Builder()
-            .cache(Cache(cacheDir, cacheSize))
-            .build()
-    }
-    bind<AniList>() with singleton {
-        AniListGraphQL()
-    }
-    bind<Json>() with singleton {
-        Json {
-            encodeDefaults = false
-            coerceInputValues = true
-            ignoreUnknownKeys = true
+                return@localeResolver Locale.getDefault()
+            }
+        }
+
+        extensions {
+            add(::About)
+            add(::Character)
+            add(::Find)
+            add(::Guild)
+            add(::Language)
+            add(::Link)
+            add(::Ranking)
+            add(::Setting)
+            add(::Staff)
+            add(::User)
+        }
+
+        presence {
+            competing("Trash")
+        }
+
+        hooks {
+            kordShutdownHook = true
+
+            afterKoinSetup {
+                loadModule {
+                    single<DataSource>(createdAtStart = true) {
+                        HikariDataSource(HikariConfig().apply {
+                            maximumPoolSize = Runtime.getRuntime().availableProcessors() / 2
+                            jdbcUrl = env("DB_URL")
+                            username = env("DB_USER")
+                            password = env("DB_PASS")
+                        })
+                    }
+                    single {
+                        Database.connect(
+                            dataSource = get(),
+                            dialect = PostgreSqlDialect()
+                        )
+                    }
+                    single {
+                        HttpClient(CIO)
+                    }
+                    single<AniList> {
+                        AniListGraphQL()
+                    }
+                    single {
+                        Json {
+                            encodeDefaults = false
+                            coerceInputValues = true
+                            ignoreUnknownKeys = true
+                        }
+                    }
+                }
+            }
+
+            created {
+                val hikari by inject<DataSource>()
+
+                Flyway.configure()
+                    .dataSource(hikari)
+                    .load()
+                    .migrate()
+            }
         }
     }
-    bind<JDA>() with singleton {
-        createJDA(
-            token = Environment.BOT_TOKEN,
-            intents = listOf(GatewayIntent.GUILD_MEMBERS)
-        ) {
-            useSharding(Environment.BOT_SHARD_ID, Environment.BOT_SHARD_TOTAL)
-            disableCache(
-                CacheFlag.ACTIVITY,
-                CacheFlag.VOICE_STATE,
-                CacheFlag.EMOTE,
-                CacheFlag.CLIENT_STATUS,
-                CacheFlag.ONLINE_STATUS
-            )
 
-            // DND during startup
-            setStatus(OnlineStatus.DO_NOT_DISTURB)
-            setEnableShutdownHook(true)
-
-        }
-            .bindCommands()
-            .bindGuildEvents()
-    }
-}
-
-/**
- * The bot version.
- */
-val version by lazy {
-    Properties().apply {
-        load(object {}.javaClass.getResourceAsStream("/version.properties"))
-    }.getProperty("version") ?: "-"
+    bot.start()
 }

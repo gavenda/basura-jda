@@ -1,23 +1,15 @@
 package basura.embed
 
-import basura.*
+import basura.abbreviate
+import basura.aniClean
 import basura.graphql.anilist.MediaListStatus
-import basura.graphql.anilist.User
-import net.dv8tion.jda.api.entities.MessageEmbed
+import basura.toHexColor
+import dev.kord.rest.builder.message.EmbedBuilder
 import java.time.Duration
 import java.util.*
 
-/**
- * Generates a user embed with their weab tendencies.
- */
-fun generateUserEmbed(user: User): MessageEmbed {
-    val statistics = user.statistics
-        ?: return Embed {
-            title = "Error"
-            description = "User Statistics are not available."
-            color = 0xFF0000
-        }
-
+fun createUserEmbed(user: basura.graphql.anilist.User): EmbedBuilder.() -> Unit = {
+    val statistics = user.statistics ?: error("User statistics is null")
     val d = Duration.ofMinutes((statistics.anime.minutesWatched).toLong())
     val apostrophe = if (user.name.lowercase(Locale.getDefault()).endsWith("s")) "'" else "'s"
 
@@ -140,16 +132,16 @@ fun generateUserEmbed(user: User): MessageEmbed {
             $weabTendencies
         """.trim().trimIndent()
 
-    return Embed {
-        title = "${user.name}${apostrophe} Statistics"
-        description = userDescription.abbreviate(DESCRIPTION_LIMIT)
-        color = user.options?.profileColor?.toHexColor()
-        image = user.bannerImage
-        thumbnail = user.avatar?.large
-        url = user.siteUrl
+    title = "${user.name}${apostrophe} Statistics"
+    description = userDescription.abbreviate(EmbedBuilder.Limits.description)
+    color = user.options?.profileColor?.toHexColor()
+    image = user.bannerImage
+    thumbnail {
+        url = user.avatar?.large ?: ""
+    }
+    url = user.siteUrl
 
-        footer {
-            name = "NOTE: Weab tendencies could be wrong since they are based on user data."
-        }
+    footer {
+        text = "NOTE: Weab tendencies could be wrong since they are based on user data."
     }
 }

@@ -1,0 +1,26 @@
+[versions]
+kotlin = "1.6.10"
+groovy = "3.0.8"
+kord-extensions = "1.5.2-SNAPSHOT"
+logging = "2.1.21"
+logback = "1.2.5"
+ktorm = "3.4.1"
+hikari = "5.0.1"
+postgresql = "42.3.1"
+flyway = "8.4.3"
+spotify = "2.3.0"
+lavakord = "3.2.0"
+copydown = "1.0"
+
+[libraries]
+kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logging = { module = "io.github.microutils:kotlin-logging", version.ref = "logging" }
+groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+ktorm = { module = "org.ktorm:ktorm-core", version.ref = "ktorm" }
+ktorm-postgresql = { module = "org.ktorm:ktorm-support-postgresql", version.ref = "ktorm" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flyway = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+copydown = { module = "io.github.furstenheim:copydown", version.ref = "copydown" }

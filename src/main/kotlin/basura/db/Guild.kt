@@ -8,8 +8,8 @@ import org.ktorm.schema.boolean
 import org.ktorm.schema.long
 import org.ktorm.schema.varchar
 
-interface Guild : Entity<Guild> {
-    companion object : Entity.Factory<Guild>()
+interface DbGuild : Entity<DbGuild> {
+    companion object : Entity.Factory<DbGuild>()
 
     val id: Long
     var discordGuildId: Long
@@ -17,11 +17,11 @@ interface Guild : Entity<Guild> {
     var locale: String
 }
 
-object Guilds : Table<Guild>("guild") {
+object DbGuilds : Table<DbGuild>("guild") {
     val id = long("id").primaryKey().bindTo { it.id }
     val discordGuildId = long("discord_guild_id").bindTo { it.discordGuildId }
     val hentai = boolean("hentai").bindTo { it.hentai }
     val locale = varchar("locale").bindTo { it.locale }
 }
 
-val Database.guilds get() = this.sequenceOf(Guilds)
+val Database.guilds get() = this.sequenceOf(DbGuilds)
