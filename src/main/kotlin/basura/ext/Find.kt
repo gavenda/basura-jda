@@ -10,8 +10,11 @@ import basura.lookupMediaList
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.publicMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.publicUserCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import kotlinx.coroutines.flow.first
 import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -97,6 +100,36 @@ class Find : Extension() {
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
                 } else false
                 val media = aniList.findMediaByType(arguments.query, MediaType.MANGA)
+                    ?.filterHentai(allowHentai)
+
+                if (media == null) {
+                    respond {
+                        content = translate("find.error.noMatchingMedia")
+                    }
+                } else {
+                    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
+                    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
+                    val paginator = respondingStandardPaginator {
+                        media.forEach {
+                            page {
+                                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
+                            }
+                        }
+                    }
+
+                    paginator.send()
+                }
+            }
+        }
+
+        publicMessageCommand {
+            name = "Search Trash"
+            action {
+                val allowHentai = if (guild != null) {
+                    val guildIdLong = guild!!.id.value.toLong()
+                    db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
+                } else false
+                val media = aniList.findMedia(targetMessages.first().content)
                     ?.filterHentai(allowHentai)
 
                 if (media == null) {

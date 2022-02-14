@@ -3,12 +3,14 @@ package basura.ext
 import basura.db.users
 import basura.embed.createUserEmbed
 import basura.graphql.AniList
+import com.kotlindiscord.kord.extensions.checks.anyGuild
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.components.components
 import com.kotlindiscord.kord.extensions.components.linkButton
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.publicUserCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.rest.builder.message.create.embed
 import org.koin.core.component.inject
@@ -96,6 +98,52 @@ class User : Extension() {
                                     label = "Follow on AniList"
                                     url = user.siteUrl
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        publicUserCommand {
+            name = "Show AniList"
+            check {
+                anyGuild()
+            }
+            action {
+                val userIdLong = targetUsers.first().id.value.toLong()
+                val guildIdLong = guild!!.id.value.toLong()
+                val dbUsername = db.users.firstOrNull {
+                    (it.discordId eq userIdLong) and (it.discordGuildId eq guildIdLong)
+                }?.aniListUsername
+
+                if (dbUsername == null) {
+                    respond {
+                        content = translate("user.error.userNotLinked")
+                    }
+                    return@action
+                }
+
+                val user = aniList.findUserStatisticsByName(dbUsername)
+
+                // Linked, but not found
+                if (user == null) {
+                    respond {
+                        content = translate("user.error.linkNotFound")
+                    }
+                } else if (user.statistics == null) {
+                    respond {
+                        content = translate("user.error.noUserStatistics")
+                    }
+                } else {
+                    respond {
+                        embed {
+                            apply(createUserEmbed(user))
+                        }
+                        components {
+                            linkButton {
+                                label = "Follow on AniList"
+                                url = user.siteUrl
                             }
                         }
                     }
