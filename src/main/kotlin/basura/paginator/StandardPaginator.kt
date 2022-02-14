@@ -65,7 +65,6 @@ abstract class StandardPaginator(
         if (pages.groups.values.any { it.size > 1 }) {
             addNavigationButtons()
         }
-        updateButtons()
 
         components.sort()
     }
@@ -147,6 +146,14 @@ abstract class StandardPaginator(
                 task?.restart()
             }
         }
+    }
+
+    suspend fun addLinkButton(embedUrl: String) {
+        viewOnAniList = components.linkButton {
+            label = "View on AniList"
+            url = embedUrl
+        }
+        components.sort()
     }
 
     /**

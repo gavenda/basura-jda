@@ -1,5 +1,6 @@
 package basura.ext
 
+import basura.abbreviate
 import basura.db.users
 import basura.embed.createUserEmbed
 import basura.graphql.AniList
@@ -166,7 +167,7 @@ class User : Extension() {
 
                 suggestString {
                     for (username in usernames) {
-                        choice(username, username)
+                        choice(username.abbreviate(100), username)
                     }
                 }
             }

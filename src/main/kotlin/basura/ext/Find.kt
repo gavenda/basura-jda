@@ -1,6 +1,7 @@
 package basura.ext
 
 import basura.PAGINATOR_TIMEOUT
+import basura.abbreviate
 import basura.aniListToDiscordNameMap
 import basura.db.guilds
 import basura.embed.createMediaEmbed
@@ -167,7 +168,7 @@ class Find : Extension() {
 
                 suggestString {
                     for (media in mediaTitles) {
-                        choice(media, media)
+                        choice(media.abbreviate(100), media)
                     }
                 }
             }
@@ -186,7 +187,7 @@ class Find : Extension() {
 
                 suggestString {
                     for (media in mediaTitles) {
-                        choice(media, media)
+                        choice(media.abbreviate(100), media)
                     }
                 }
             }
@@ -205,7 +206,7 @@ class Find : Extension() {
 
                 suggestString {
                     for (media in mediaTitles) {
-                        choice(media, media)
+                        choice(media.abbreviate(100), media)
                     }
                 }
             }

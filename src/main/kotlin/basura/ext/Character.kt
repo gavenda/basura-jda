@@ -1,6 +1,7 @@
 package basura.ext
 
 import basura.PAGINATOR_TIMEOUT
+import basura.abbreviate
 import basura.embed.createCharacterEmbed
 import basura.graphql.AniList
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -84,7 +85,7 @@ class Character : Extension() {
 
                 suggestString {
                     for (characterName in characterNames) {
-                        choice(characterName, characterName)
+                        choice(characterName.abbreviate(100), characterName)
                     }
                 }
             }

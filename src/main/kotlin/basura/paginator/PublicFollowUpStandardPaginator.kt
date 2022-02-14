@@ -39,7 +39,10 @@ class PublicFollowUpStandardPaginator(
             setup()
 
             embedInteraction = interaction.followUp {
-                embed { applyPage() }
+                embed {
+                    applyPage()
+                    url?.let { addLinkButton(it) }
+                }
 
                 with(this@PublicFollowUpStandardPaginator.components) {
                     this@followUp.applyToMessage()

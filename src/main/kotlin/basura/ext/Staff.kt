@@ -1,6 +1,7 @@
 package basura.ext
 
 import basura.PAGINATOR_TIMEOUT
+import basura.abbreviate
 import basura.embed.createStaffEmbed
 import basura.graphql.AniList
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -81,7 +82,7 @@ class Staff : Extension() {
 
                 suggestString {
                     for (staffName in staffNames) {
-                        choice(staffName, staffName)
+                        choice(staffName.abbreviate(100), staffName)
                     }
                 }
             }

@@ -5,7 +5,7 @@ query(
   $season: MediaSeason,
   $seasonYear: Int,
   $formatIn: [MediaFormat],
-  $allowHentai: Boolean)
+  $allowHentai: Boolean
 ) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
