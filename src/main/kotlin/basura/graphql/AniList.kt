@@ -19,15 +19,10 @@ interface AniList {
     /**
      * Finds a media based on query.
      * @param query query name for media
+     * @param mediaType the type of media
+     * @param hentai enable the hentai genre
      */
-    suspend fun findMedia(query: String, allowHentai: Boolean = false): List<Media>?
-
-    /**
-     * Finds a media based on query and type.
-     * @param query query name for media
-     * @param type type of media
-     */
-    suspend fun findMediaByType(query: String, type: MediaType, allowHentai: Boolean = false): List<Media>?
+    suspend fun findMedia(query: String, mediaType: MediaType? = null, hentai: Boolean = false): List<Media>?
 
     /**
      * Finds a media based on its ranking.
@@ -35,13 +30,14 @@ interface AniList {
      * @param formatIn the media formats to filter
      * @param season the season to filter
      * @param seasonYear the season year to filter
+     * @param hentai enable the hentai genre
      */
     suspend fun findMediaByRanking(
         amount: Int,
         formatIn: List<MediaFormat>?,
         season: MediaSeason?,
         seasonYear: Int?,
-        allowHentai: Boolean = false
+        hentai: Boolean = false
     ): List<Media>?
 
     suspend fun findMediaTitles(

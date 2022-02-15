@@ -6,8 +6,9 @@ import basura.appendIfNotMax
 import basura.weirdHtmlClean
 import dev.kord.common.Color
 import dev.kord.rest.builder.message.EmbedBuilder
+import basura.graphql.anilist.Character
 
-fun createCharacterEmbed(character: basura.graphql.anilist.Character): EmbedBuilder.() -> Unit = {
+fun createCharacterEmbed(character: Character): EmbedBuilder.() -> Unit = {
     val animeAppearance = StringBuilder()
     val mangaAppearance = StringBuilder()
 

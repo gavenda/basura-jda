@@ -1,18 +1,17 @@
 package basura.ext
 
-import basura.PAGINATOR_TIMEOUT
 import basura.abbreviate
-import basura.aniListToDiscordNameMap
 import basura.db.guilds
-import basura.embed.createMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaType
-import basura.lookupMediaList
+import basura.sendMediaResult
 import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.ApplicationCommandContext
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.focusedOption
 import dev.kord.core.behavior.interaction.suggestString
@@ -21,7 +20,6 @@ import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
 import org.ktorm.entity.firstOrNull
-import respondingStandardPaginator
 
 class Find : Extension() {
     override val name: String = "find"
@@ -29,38 +27,14 @@ class Find : Extension() {
 
     private val aniList by inject<AniList>()
     private val db by inject<Database>()
-
-    private val log = KotlinLogging.logger {  }
+    private val log = KotlinLogging.logger { }
 
     override suspend fun setup() {
         publicSlashCommand(::FindArgs) {
             name = "find"
             description = "Looks up the name of the anime/manga."
             action {
-                val allowHentai = if (guild != null) {
-                    val guildIdLong = guild!!.id.value.toLong()
-                    db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
-                } else false
-                val media = aniList.findMedia(arguments.query, allowHentai)
-
-                if (media == null) {
-                    respond {
-                        content = translate("find.error.noMatchingMedia")
-                    }
-                } else {
-                    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
-                    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
-                    val paginator = respondingStandardPaginator {
-                        timeoutSeconds = PAGINATOR_TIMEOUT
-                        media.forEach {
-                            page {
-                                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
-                            }
-                        }
-                    }
-
-                    paginator.send()
-                }
+                findMedia(arguments.query)
             }
         }
 
@@ -68,30 +42,7 @@ class Find : Extension() {
             name = "anime"
             description = "Looks up the name of the anime."
             action {
-                val allowHentai = if (guild != null) {
-                    val guildIdLong = guild!!.id.value.toLong()
-                    db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
-                } else false
-                val media = aniList.findMediaByType(arguments.query, MediaType.ANIME, allowHentai)
-
-                if (media == null) {
-                    respond {
-                        content = translate("find.error.noMatchingMedia")
-                    }
-                } else {
-                    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
-                    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
-                    val paginator = respondingStandardPaginator {
-                        timeoutSeconds = PAGINATOR_TIMEOUT
-                        media.forEach {
-                            page {
-                                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
-                            }
-                        }
-                    }
-
-                    paginator.send()
-                }
+                findMedia(arguments.query, MediaType.ANIME)
             }
         }
 
@@ -99,62 +50,37 @@ class Find : Extension() {
             name = "manga"
             description = "Looks up the name of the manga."
             action {
-                val allowHentai = if (guild != null) {
-                    val guildIdLong = guild!!.id.value.toLong()
-                    db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
-                } else false
-                val media = aniList.findMediaByType(arguments.query, MediaType.MANGA, allowHentai)
-
-                if (media == null) {
-                    respond {
-                        content = translate("find.error.noMatchingMedia")
-                    }
-                } else {
-                    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
-                    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
-                    val paginator = respondingStandardPaginator {
-                        timeoutSeconds = PAGINATOR_TIMEOUT
-                        media.forEach {
-                            page {
-                                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
-                            }
-                        }
-                    }
-
-                    paginator.send()
-                }
+                findMedia(arguments.query, MediaType.MANGA)
             }
         }
 
         publicMessageCommand {
             name = "Search Trash"
             action {
-                val allowHentai = if (guild != null) {
-                    val guildIdLong = guild!!.id.value.toLong()
-                    db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
-                } else false
-                val media = aniList.findMedia(targetMessages.first().content, allowHentai)
-
-                if (media == null) {
-                    respond {
-                        content = translate("find.error.noMatchingMedia")
-                    }
-                } else {
-                    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
-                    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull())
-                    val paginator = respondingStandardPaginator {
-                        timeoutSeconds = PAGINATOR_TIMEOUT
-                        media.forEach {
-                            page {
-                                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
-                            }
-                        }
-                    }
-
-                    paginator.send()
-                }
+                findMedia(targetMessages.first().content)
             }
         }
+    }
+
+    private suspend fun ApplicationCommandContext.findMedia(query: String, type: MediaType? = null) {
+        if (this !is PublicInteractionContext) return
+
+        log.info { "Looking up media [ query = $query, userId = ${user.id} ]" }
+
+        val hentai = if (guild != null) {
+            val guildIdLong = guild!!.id.value.toLong()
+            db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
+        } else false
+        val media = aniList.findMedia(query, type, hentai)
+
+        if (media == null || media.isEmpty()) {
+            respond {
+                content = translate("find.error.noMatchingMedia")
+            }
+            return
+        }
+
+        sendMediaResult(guild, media)
     }
 
     inner class FindArgs : Arguments() {

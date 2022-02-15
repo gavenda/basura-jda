@@ -1,17 +1,25 @@
 package basura
 
 import basura.db.users
+import basura.embed.createMediaEmbed
 import basura.graphql.AniList
 import basura.graphql.anilist.Media
+import basura.graphql.anilist.MediaList
+import basura.graphql.anilist.MediaType
+import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
+import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.entity.Guild
 import io.github.furstenheim.CopyDown
 import org.koin.java.KoinJavaComponent.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
+import org.ktorm.dsl.inList
 import org.ktorm.entity.filter
 import org.ktorm.entity.map
+import respondingStandardPaginator
 
 /**
  * Loads any file in resources and returns them as a string.
@@ -128,24 +136,43 @@ fun Int.toStars(): String {
 /**
  * Map AniList identifier to the proper discord name
  */
-internal suspend fun aniListToDiscordNameMap(guild: Guild?): Map<Long, String?> {
+internal suspend fun aniListToDiscordNameMap(guild: Guild?, userIds: List<Long>?): Map<Long, String?> {
     val db by inject<Database>(Database::class.java)
     if (guild == null) return mapOf()
+    if (userIds == null || userIds.isEmpty()) return mapOf()
     return db.users
-        .filter { it.discordGuildId eq guild.id.value.toLong() }
+        .filter { it.aniListId inList userIds }
         .map {
             it.aniListId to guild.getMember(Snowflake(it.discordId)).displayName
         }.toMap()
 }
 
-internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<basura.graphql.anilist.MediaList>? {
+internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List<MediaList>? {
     val db by inject<Database>(Database::class.java)
     val aniList by inject<AniList>(AniList::class.java)
-
+    val userIds = db.users
+        .filter { it.discordGuildId eq (guildId ?: -1) }
+        .map { it.aniListId }
     return aniList.findScoreByUsersAndMedias(
-        userIds = db.users
-            .filter { it.discordGuildId eq (guildId ?: -1) }
-            .map { it.aniListId },
+        userIds = userIds,
         mediaIds = medias?.map { it.id }
     )
+}
+
+internal suspend fun PublicInteractionContext.sendMediaResult(guild: GuildBehavior?, media: List<Media>) {
+    val mediaList = lookupMediaList(media, guild?.id?.value?.toLong())
+    val userIds = mediaList?.mapNotNull { it.user?.id }
+    val aniToDiscordName = aniListToDiscordNameMap(guild?.fetchGuildOrNull(), userIds)
+    val paginator = respondingStandardPaginator {
+        timeoutSeconds = PAGINATOR_TIMEOUT
+        media.forEach {
+            page {
+                apply(createMediaEmbed(it, mediaList, aniToDiscordName))
+            }
+        }
+    }
+
+    if (paginator.pages.groups.isNotEmpty()) {
+        paginator.send()
+    }
 }

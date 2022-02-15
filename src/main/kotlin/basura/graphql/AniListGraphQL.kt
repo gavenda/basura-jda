@@ -21,26 +21,14 @@ class AniListGraphQL : AniList {
         return result.User
     }
 
-    override suspend fun findMedia(query: String, allowHentai: Boolean): List<Media>? {
+    override suspend fun findMedia(query: String, type: MediaType?, hentai: Boolean): List<Media>? {
         val gqlQuery = findResourceAsText("/gql/FindMedia.graphql")
-        val variables = FindMedia(
-            query = query,
-            page = 1,
-            perPage = 10,
-            genreNotIn = if (!allowHentai) listOf("Hentai") else null
-        )
-        val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
-        return result.Page?.media
-    }
-
-    override suspend fun findMediaByType(query: String, type: MediaType, allowHentai: Boolean): List<Media>? {
-        val gqlQuery = findResourceAsText("/gql/FindMediaByType.graphql")
         val variables = FindMedia(
             query = query,
             type = type,
             page = 1,
             perPage = 10,
-            genreNotIn = if (!allowHentai) listOf("Hentai") else null
+            genreNotIn = if (!hentai) listOf("Hentai") else null
         )
         val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.media
@@ -51,7 +39,7 @@ class AniListGraphQL : AniList {
         formatIn: List<MediaFormat>?,
         season: MediaSeason?,
         seasonYear: Int?,
-        allowHentai: Boolean
+        hentai: Boolean
     ): List<Media>? {
         val gqlQuery = findResourceAsText("/gql/FindMediaByRanking.graphql")
         val variables = FindMedia(
@@ -61,7 +49,7 @@ class AniListGraphQL : AniList {
             formatIn = formatIn,
             season = season,
             seasonYear = seasonYear,
-            genreNotIn = if (!allowHentai) listOf("Hentai") else null
+            genreNotIn = if (!hentai) listOf("Hentai") else null
         )
         val result = gqlQuery<FindMedia, PageResult>(graphUri, gqlQuery, variables)
         return result.Page?.media
