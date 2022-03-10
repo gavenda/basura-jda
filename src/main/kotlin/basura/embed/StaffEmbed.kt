@@ -9,14 +9,6 @@ import dev.kord.common.Color
 import dev.kord.rest.builder.message.EmbedBuilder
 
 fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
-    val staffTitle = StringBuilder().apply {
-        val native = staff.name?.native
-        append(staff.name?.full)
-        if (native != null) {
-            append(" (${native})")
-        }
-    }
-
     val characterNodes = staff.characters?.nodes
     val characterEdges = staff.characters?.edges
     val staffMediaNodes = staff.staffMedia?.nodes
@@ -24,9 +16,7 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
 
     val charactersVoiced = buildString {
         if (characterNodes != null && characterEdges != null) {
-            val zip = characterNodes.zip(characterEdges)
-
-            for (pair in zip) {
+            characterNodes.zip(characterEdges).forEach { pair ->
                 val (node, edge) = pair
                 // Ensure not null
                 if (node != null && edge != null) {
@@ -41,9 +31,7 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
 
     val workedOn = buildString {
         if (staffMediaNodes != null && staffMediaEdges != null) {
-            val zip = staffMediaNodes.zip(staffMediaEdges)
-
-            for (pair in zip) {
+            staffMediaNodes.zip(staffMediaEdges).forEach { pair ->
                 val (node, edge) = pair
                 // Ensure not null
                 if (node != null && edge != null) {
@@ -76,7 +64,15 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
         .abbreviate(EmbedBuilder.Limits.description)
         .dropLastWhile { it != '\n' }
 
-    title = staffTitle.toString()
+    // Staff title
+    title = buildString {
+        val native = staff.name?.native
+        append(staff.name?.full)
+        if (native != null) {
+            append(" (${native})")
+        }
+    }
+
     description = resultDescription
     thumbnail {
         url = staff.image?.large ?: ""
@@ -84,7 +80,7 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
     url = staff.siteUrl
     color = Color(0xFF0000)
 
-    if (charactersVoiced.isNotEmpty()) {
+    if (charactersVoiced.isNotBlank()) {
         field {
             name = "Characters Voiced"
             value = charactersVoiced
@@ -94,7 +90,7 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
         }
     }
 
-    if (workedOn.isNotEmpty()) {
+    if (workedOn.isNotBlank()) {
         field {
             name = "Worked On"
             value = workedOn
@@ -104,7 +100,7 @@ fun createStaffEmbed(staff: Staff): EmbedBuilder.() -> Unit = {
         }
     }
 
-    if (aliases.isNotEmpty()) {
+    if (aliases.isNotBlank()) {
         field {
             name = "Aliases"
             value = aliases

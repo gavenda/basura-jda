@@ -1,5 +1,7 @@
 package basura.ext
 
+import basura.AppDispatchers
+import basura.action
 import basura.check.anyGuild
 import basura.db.DbUser
 import basura.db.users
@@ -9,6 +11,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.ktorm.database.Database
@@ -33,7 +37,7 @@ class Link : Extension() {
             check {
                 anyGuild(translate("link.error.serverOnly"))
             }
-            action {
+            action(AppDispatchers.IO) {
                 val userIdLong = user.id.value.toLong()
                 val guildIdLong = guild!!.id.value.toLong()
 
@@ -78,28 +82,30 @@ class Link : Extension() {
                 anyGuild(translate("unlink.error.serverOnly"))
             }
             action {
-                val userIdLong = user.id.value.toLong()
-                val guildIdLong = guild!!.id.value.toLong()
+                CoroutineScope(AppDispatchers.IO).launch {
+                    val userIdLong = user.id.value.toLong()
+                    val guildIdLong = guild!!.id.value.toLong()
 
-                val existingUser = db.users.firstOrNull {
-                    (it.discordId eq userIdLong) and (it.discordGuildId eq guildIdLong)
-                }
-
-                if (existingUser == null) {
-                    respond {
-                        content = translate("unlink.error.notLinked")
+                    val existingUser = db.users.firstOrNull {
+                        (it.discordId eq userIdLong) and (it.discordGuildId eq guildIdLong)
                     }
-                    return@action
-                }
 
-                log.debug { "Unlinking AniList user [ ${existingUser.aniListUsername} ] from Discord [ user = $userIdLong, guild = $guildIdLong ]" }
+                    if (existingUser == null) {
+                        respond {
+                            content = translate("unlink.error.notLinked")
+                        }
+                        return@launch
+                    }
 
-                db.users.removeIf {
-                    (it.discordId eq userIdLong) and (it.discordGuildId eq guildIdLong)
-                }
+                    log.debug { "Unlinking AniList user [ ${existingUser.aniListUsername} ] from Discord [ user = $userIdLong, guild = $guildIdLong ]" }
 
-                respond {
-                    content = translate("unlink.successful")
+                    db.users.removeIf {
+                        (it.discordId eq userIdLong) and (it.discordGuildId eq guildIdLong)
+                    }
+
+                    respond {
+                        content = translate("unlink.successful")
+                    }
                 }
             }
         }

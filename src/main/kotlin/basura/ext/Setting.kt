@@ -1,5 +1,7 @@
 package basura.ext
 
+import basura.AppDispatchers
+import basura.action
 import basura.check.anyGuild
 import basura.db.guilds
 import basura.toYesNo
@@ -36,7 +38,7 @@ class Setting : Extension() {
                     anyGuild()
                     hasPermission(Permission.Administrator)
                 }
-                action {
+                action(AppDispatchers.IO) {
                     val guildIdLong = guild!!.id.value.toLong()
                     val dbGuild = db.guilds.first { it.discordGuildId eq guildIdLong }
                     val locale = java.util.Locale.forLanguageTag(dbGuild.locale)
@@ -72,7 +74,7 @@ class Setting : Extension() {
                     anyGuild()
                     hasPermission(Permission.Administrator)
                 }
-                action {
+                action(AppDispatchers.IO) {
                     val guildIdLong = guild!!.id.value.toLong()
                     val dbGuild = db.guilds.first { it.discordGuildId eq guildIdLong }
 
@@ -92,7 +94,7 @@ class Setting : Extension() {
                     anyGuild()
                     hasPermission(Permission.Administrator)
                 }
-                action {
+                action(AppDispatchers.IO) {
                     val guildIdLong = guild!!.id.value.toLong()
                     val dbGuild = db.guilds.first { it.discordGuildId eq guildIdLong }
 

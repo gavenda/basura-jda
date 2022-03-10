@@ -19,10 +19,10 @@ interface AniList {
     /**
      * Finds a media based on query.
      * @param query query name for media
-     * @param mediaType the type of media
+     * @param type the type of media
      * @param hentai enable the hentai genre
      */
-    suspend fun findMedia(query: String, mediaType: MediaType? = null, hentai: Boolean = false): List<Media>?
+    suspend fun findMedia(query: String, type: MediaType? = null, hentai: Boolean = false): List<Media>?
 
     /**
      * Finds a media based on its ranking.

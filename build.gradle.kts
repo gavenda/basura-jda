@@ -1,13 +1,10 @@
 import java.util.Properties
-import com.expediagroup.graphql.plugin.gradle.config.GraphQLSerializer
-import com.expediagroup.graphql.plugin.gradle.graphql
 
 plugins {
     application
     idea
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.serialization") version "1.6.10"
-    id("com.expediagroup.graphql") version "5.3.2"
     id("org.hidetake.ssh") version "2.10.1"
 }
 
@@ -41,6 +38,8 @@ version = "2.1"
 
 dependencies {
     implementation(libs.kotlin.stdlib)
+
+    // Framework
     implementation(libs.kord.extensions)
 
     // HTML to Markdown
@@ -61,13 +60,11 @@ dependencies {
 
 val generatedSourcesPath = file("build/generated")
 
-java {                                      
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
 kotlin {
     sourceSets["main"].kotlin.srcDir(generatedSourcesPath)
+    jvmToolchain {
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
 idea {
@@ -81,7 +78,6 @@ apply(from = "ssh.gradle")
 tasks {
     compileKotlin {
         kotlinOptions {
-            jvmTarget = "11"
             freeCompilerArgs = listOf(
                 "-Xopt-in=kotlin.RequiresOptIn",
                 "-Xopt-in=dev.kord.gateway.PrivilegedIntent",

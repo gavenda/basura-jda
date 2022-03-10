@@ -6,13 +6,27 @@ import basura.graphql.AniList
 import basura.graphql.anilist.Media
 import basura.graphql.anilist.MediaList
 import basura.graphql.anilist.MediaType
+import com.kotlindiscord.kord.extensions.commands.Arguments
+import com.kotlindiscord.kord.extensions.commands.application.message.MessageCommand
+import com.kotlindiscord.kord.extensions.commands.application.message.MessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommand
+import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.user.UserCommand
+import com.kotlindiscord.kord.extensions.commands.application.user.UserCommandContext
+import com.kotlindiscord.kord.extensions.events.EventContext
+import com.kotlindiscord.kord.extensions.events.EventHandler
 import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.entity.Guild
+import dev.kord.core.event.Event
 import io.github.furstenheim.CopyDown
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -157,6 +171,44 @@ internal suspend fun lookupMediaList(medias: List<Media>?, guildId: Long?): List
         userIds = userIds,
         mediaIds = medias?.map { it.id }
     )
+}
+
+inline fun <C : SlashCommandContext<C, A>, A : Arguments> SlashCommand<C, A>.action(dispatcher: CoroutineDispatcher, crossinline action: suspend C.() -> Unit) {
+    action {
+        CoroutineScope(dispatcher).launch {
+            action()
+        }
+    }
+}
+
+inline fun <C: MessageCommandContext<*>> MessageCommand<C>.action(dispatcher: CoroutineDispatcher, crossinline action: suspend C.() -> Unit) {
+    action {
+        CoroutineScope(dispatcher).launch {
+            action()
+        }
+    }
+}
+
+inline fun <C: UserCommandContext<*>> UserCommand<C>.action(dispatcher: CoroutineDispatcher, crossinline action: suspend C.() -> Unit) {
+    action {
+        CoroutineScope(dispatcher).launch {
+            action()
+        }
+    }
+}
+
+inline fun <T : Event> EventHandler<T>.action(dispatcher: CoroutineDispatcher, crossinline action: suspend  EventContext<T>.() -> Unit) {
+    action {
+        CoroutineScope(dispatcher).launch {
+            action()
+        }
+    }
+}
+
+inline fun failSilently(body: () -> Unit) {
+    try {
+        body()
+    } catch (_: Exception) {}
 }
 
 internal suspend fun PublicInteractionContext.sendMediaResult(guild: GuildBehavior?, media: List<Media>) {

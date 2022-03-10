@@ -35,10 +35,10 @@ abstract class StandardPaginator(
     var components: ComponentContainer = ComponentContainer()
 
     /** Scheduler used to schedule the paginator's timeout. **/
-    var scheduler: Scheduler = Scheduler()
+    private var scheduler: Scheduler = Scheduler()
 
     /** Scheduler used to schedule the paginator's timeout. **/
-    var task: Task? = if (timeoutSeconds != null) {
+    private var task: Task? = if (timeoutSeconds != null) {
         scheduler.schedule(timeoutSeconds) { destroy() }
     } else {
         null
@@ -156,6 +156,13 @@ abstract class StandardPaginator(
         components.sort()
     }
 
+    private suspend fun removeNavigationButtons() {
+        backButton?.let { components.remove(it) }
+        nextButton?.let { components.remove(it) }
+        backButton = null
+        nextButton = null
+    }
+
     /**
      * Convenience function that enables and disables buttons as necessary, depending on the current page number.
      */
@@ -180,10 +187,7 @@ abstract class StandardPaginator(
                 components.sort()
             }
         } else {
-            backButton?.let { components.remove(it) }
-            nextButton?.let { components.remove(it) }
-            backButton = null
-            nextButton = null
+            removeNavigationButtons()
         }
     }
 }

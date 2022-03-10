@@ -33,54 +33,47 @@ fun createMediaEmbed(
     val notOnList = StringBuilder()
     val repeating = StringBuilder()
 
-    if (mediaList != null) {
-        val embedMedias = mediaList
-            .filter { it.mediaId == media.id }
-            .map { ml ->
-                EmbedMedia(
-                    discordName = aniToDiscordName[ml.user?.id],
-                    status = ml.status,
-                    score = ml.score,
-                    progress = ml.progress
-                )
-            }
-            .sortedWith(compareBy({ it.progress }, { it.discordName }))
-
-        for (embedMedia in embedMedias) {
-            when (embedMedia.status) {
-                MediaListStatus.COMPLETED -> {
-                    if (embedMedia.score == 0f) {
-                        // Display a ? if no score. (0 indicates no score on AniList)
-                        completed.append("- ${embedMedia.discordName} ‣ (-)\n")
-                    } else {
-                        // Display the score otherwise.
-                        completed.append("- ${embedMedia.discordName} ‣ ${embedMedia.score.toStars()} (${embedMedia.score})\n")
-                    }
-                }
-                MediaListStatus.CURRENT -> {
-                    inProgress.append("- ${embedMedia.discordName} ‣ [${embedMedia.progress}]\n")
-                }
-                MediaListStatus.DROPPED -> {
-                    dropped.append("- ${embedMedia.progress} ‣ [${embedMedia.progress}]\n")
-                }
-                MediaListStatus.PAUSED -> {
-                    paused.append("- ${embedMedia.discordName} ‣ [${embedMedia.progress}]\n")
-                }
-                MediaListStatus.PLANNING -> {
-                    planned.append("- ${embedMedia.discordName}\n")
-                }
-                MediaListStatus.REPEATING -> {
-                    if (embedMedia.score == 0f) {
-                        completed.append("- ${embedMedia.discordName} ‣ (-)\n")
-                    }
+    mediaList?.filter { it.mediaId == media.id }?.map { ml ->
+        EmbedMedia(
+            discordName = aniToDiscordName[ml.user?.id],
+            status = ml.status,
+            score = ml.score,
+            progress = ml.progress
+        )
+    }?.sortedWith(compareBy({ it.progress }, { it.discordName }))?.forEach { embedMedia ->
+        when (embedMedia.status) {
+            MediaListStatus.COMPLETED -> {
+                if (embedMedia.score == 0f) {
+                    // Display a ? if no score. (0 indicates no score on AniList)
+                    completed.append("- ${embedMedia.discordName} ‣ (-)\n")
+                } else {
                     // Display the score otherwise.
-                    else {
-                        repeating.append("- ${embedMedia.discordName} ‣ ${embedMedia.score.toStars()} (${embedMedia.score}) [Episode: ${embedMedia.progress}]\n")
-                    }
+                    completed.append("- ${embedMedia.discordName} ‣ ${embedMedia.score.toStars()} (${embedMedia.score})\n")
                 }
-                else -> {
-                    notOnList.append("- ${embedMedia.discordName}\n")
+            }
+            MediaListStatus.CURRENT -> {
+                inProgress.append("- ${embedMedia.discordName} ‣ [${embedMedia.progress}]\n")
+            }
+            MediaListStatus.DROPPED -> {
+                dropped.append("- ${embedMedia.progress} ‣ [${embedMedia.progress}]\n")
+            }
+            MediaListStatus.PAUSED -> {
+                paused.append("- ${embedMedia.discordName} ‣ [${embedMedia.progress}]\n")
+            }
+            MediaListStatus.PLANNING -> {
+                planned.append("- ${embedMedia.discordName}\n")
+            }
+            MediaListStatus.REPEATING -> {
+                if (embedMedia.score == 0f) {
+                    completed.append("- ${embedMedia.discordName} ‣ (-)\n")
                 }
+                // Display the score otherwise.
+                else {
+                    repeating.append("- ${embedMedia.discordName} ‣ ${embedMedia.score.toStars()} (${embedMedia.score}) [Episode: ${embedMedia.progress}]\n")
+                }
+            }
+            else -> {
+                notOnList.append("- ${embedMedia.discordName}\n")
             }
         }
     }

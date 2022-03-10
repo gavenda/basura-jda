@@ -25,7 +25,7 @@ import javax.sql.DataSource
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-val PAGINATOR_TIMEOUT = 300.toDuration(DurationUnit.SECONDS).inWholeMilliseconds
+val PAGINATOR_TIMEOUT = 60L
 
 suspend fun main() {
     val bot = ExtensibleBot(env("TOKEN")) {

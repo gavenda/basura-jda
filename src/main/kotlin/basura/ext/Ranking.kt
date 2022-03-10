@@ -1,5 +1,7 @@
 package basura.ext
 
+import basura.AppDispatchers
+import basura.action
 import basura.db.guilds
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaFormat
@@ -7,7 +9,6 @@ import basura.graphql.anilist.MediaSeason
 import basura.sendMediaResult
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.defaultingStringChoice
-import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -31,9 +32,8 @@ class Ranking : Extension() {
         publicSlashCommand(::RankingArgs) {
             name = "ranking"
             description = "Shows the current ranking based on given parameters."
-            action {
+            action(AppDispatchers.IO) {
                 log.info { "Looking up ranking $arguments with [ userId = ${user.id} ]" }
-
                 val allowHentai = if (guild != null) {
                     val guildIdLong = guild!!.id.value.toLong()
                     db.guilds.firstOrNull { it.discordGuildId eq guildIdLong }?.hentai ?: false
@@ -43,7 +43,7 @@ class Ranking : Extension() {
                 val mediaFormat = MediaFormat.valueOf(arguments.format)
 
                 val media = aniList.findMediaByRanking(
-                    amount = arguments.amount,
+                    amount = arguments.amount ?: 10,
                     formatIn = listOf(mediaFormat),
                     season = mediaSeason,
                     seasonYear = arguments.year,
@@ -62,7 +62,7 @@ class Ranking : Extension() {
     }
 
     inner class RankingArgs : Arguments() {
-        val amount by int {
+        val amount by optionalInt {
             name = "amount"
             description = "Number of media to show."
         }

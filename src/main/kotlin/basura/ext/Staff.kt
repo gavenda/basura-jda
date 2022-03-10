@@ -1,7 +1,9 @@
 package basura.ext
 
+import basura.AppDispatchers
 import basura.PAGINATOR_TIMEOUT
 import basura.abbreviate
+import basura.action
 import basura.embed.createStaffEmbed
 import basura.graphql.AniList
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -12,7 +14,6 @@ import com.kotlindiscord.kord.extensions.extensions.publicMessageCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.focusedOption
 import dev.kord.core.behavior.interaction.suggestString
 import mu.KotlinLogging
 import org.koin.core.component.inject
@@ -22,20 +23,20 @@ class Staff : Extension() {
     override val name: String = "staff"
     override val bundle: String = "staff"
     private val aniList by inject<AniList>()
-    private val log = KotlinLogging.logger {  }
+    private val log = KotlinLogging.logger { }
 
     override suspend fun setup() {
         publicSlashCommand(::CharacterArgs) {
             name = "staff"
             description = "Looks up the name of an anime/manga staff."
-            action {
+            action(AppDispatchers.IO) {
                 findStaff(arguments.query)
             }
         }
 
         publicMessageCommand {
             name = "Search Staff"
-            action {
+            action(AppDispatchers.IO) {
                 findStaff(targetMessages.first().content)
             }
         }
@@ -56,7 +57,7 @@ class Staff : Extension() {
         }
         val paginator = respondingStandardPaginator {
             timeoutSeconds = PAGINATOR_TIMEOUT
-            for (staff in staffs) {
+            staffs.forEach { staff ->
                 page {
                     apply(createStaffEmbed(staff))
                 }
@@ -73,11 +74,10 @@ class Staff : Extension() {
             description = "Name of the anime/manga staff."
             autoComplete {
                 if (!focusedOption.focused) return@autoComplete
-                val typed = focusedOption.value as String
-                val staffNames = aniList.findStaffNames(typed).take(25)
+                val typed = focusedOption.value
 
                 suggestString {
-                    for (staffName in staffNames) {
+                    aniList.findStaffNames(typed).take(25).forEach { staffName ->
                         choice(staffName.abbreviate(100), staffName)
                     }
                 }

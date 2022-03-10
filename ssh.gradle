@@ -1,12 +1,12 @@
 remotes {
     raspi {
-        host = '192.168.143.50'
+        host = 'pi.monarch.home'
         user = 'basura'
         password = new File('ssh/basura.password').text
     }
 
     raspiAdmin {
-        host = '192.168.143.50'
+        host = 'pi.monarch.home'
         user = 'pi'
         password = new File('ssh/pi.password').text
     }

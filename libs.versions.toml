@@ -1,6 +1,7 @@
 [versions]
 kotlin = "1.6.10"
 groovy = "3.0.8"
+kord = "0.8.0-M11"
 kord-extensions = "1.5.2-SNAPSHOT"
 logging = "2.1.21"
 logback = "1.2.5"
@@ -13,6 +14,10 @@ lavakord = "3.2.0"
 copydown = "1.0"
 
 [libraries]
+kord-core = { module = "dev.kord:kord-core", version.ref = "kord" }
+kord-gateway = { module = "dev.kord:kord-gateway", version.ref = "kord" }
+kord-rest = { module = "dev.kord:kord-rest", version.ref = "kord" }
+kord-voice = { module = "dev.kord:kord-voice", version.ref = "kord" }
 kord-extensions = { module = "com.kotlindiscord.kord.extensions:kord-extensions", version.ref = "kord-extensions" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -24,3 +29,6 @@ hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 flyway = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 copydown = { module = "io.github.furstenheim:copydown", version.ref = "copydown" }
+
+[bundles]
+kord = ["kord-gateway", "kord-rest", "kord-core"]

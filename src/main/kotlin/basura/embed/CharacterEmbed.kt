@@ -3,10 +3,10 @@ package basura.embed
 import basura.abbreviate
 import basura.aniClean
 import basura.appendIfNotMax
+import basura.graphql.anilist.Character
 import basura.weirdHtmlClean
 import dev.kord.common.Color
 import dev.kord.rest.builder.message.EmbedBuilder
-import basura.graphql.anilist.Character
 
 fun createCharacterEmbed(character: Character): EmbedBuilder.() -> Unit = {
     val animeAppearance = StringBuilder()
@@ -16,9 +16,7 @@ fun createCharacterEmbed(character: Character): EmbedBuilder.() -> Unit = {
     val mediaEdges = character.media?.edges
 
     if (mediaNodes != null && mediaEdges != null) {
-        val mediaZip = mediaNodes.zip(mediaEdges)
-
-        for (pair in mediaZip) {
+        mediaNodes.zip(mediaEdges).forEach { pair ->
             val (media, edge) = pair
             // Ensure not null
             if (media != null && edge != null) {
@@ -95,7 +93,7 @@ fun createCharacterEmbed(character: Character): EmbedBuilder.() -> Unit = {
         }
     }
 
-    if (aliases.isNotEmpty()) {
+    if (aliases.isNotBlank()) {
         field {
             name = "Aliases"
             value = aliases

@@ -1,5 +1,7 @@
 package basura.ext
 
+import basura.AppDispatchers
+import basura.action
 import basura.db.DbUserLocale
 import basura.db.userLocales
 import com.kotlindiscord.kord.extensions.commands.Arguments
@@ -7,6 +9,8 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.converters.i
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.core.component.inject
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
@@ -22,7 +26,7 @@ class Language : Extension() {
         ephemeralSlashCommand(::LanguageArgs) {
             name = "language"
             description = "The language you want to show up (will take precedence over server setting)."
-            action {
+            action(AppDispatchers.IO) {
                 val userLocale = db.userLocales.firstOrNull { it.discordId eq user.id.value.toLong() }
 
                 if (userLocale != null) {

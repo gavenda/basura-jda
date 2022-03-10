@@ -1,3 +1,4 @@
+import basura.failSilently
 import basura.paginator.StandardPaginator
 import com.kotlindiscord.kord.extensions.pagination.EXPAND_EMOJI
 import com.kotlindiscord.kord.extensions.pagination.SWITCH_EMOJI
@@ -5,11 +6,11 @@ import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import dev.kord.core.behavior.UserBehavior
-import dev.kord.core.behavior.interaction.InteractionResponseBehavior
-import dev.kord.core.behavior.interaction.edit
-import dev.kord.core.behavior.interaction.followUp
+import dev.kord.core.behavior.interaction.followup.edit
+import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
+import dev.kord.core.behavior.interaction.response.createPublicFollowup
 import dev.kord.core.entity.ReactionEmoji
-import dev.kord.core.entity.interaction.PublicFollowupMessage
+import dev.kord.core.entity.interaction.followup.PublicFollowupMessage
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import java.util.*
@@ -29,7 +30,7 @@ class PublicFollowUpStandardPaginator(
     bundle: String? = null,
     locale: Locale? = null,
 
-    val interaction: InteractionResponseBehavior,
+    val interaction: FollowupPermittingInteractionResponseBehavior,
 ) : StandardPaginator(pages, owner, timeoutSeconds, keepEmbed, switchEmoji, bundle, locale) {
     /** Follow-up interaction to use for this paginator's embeds. Will be created by [send]. **/
     var embedInteraction: PublicFollowupMessage? = null
@@ -38,14 +39,14 @@ class PublicFollowUpStandardPaginator(
         if (embedInteraction == null) {
             setup()
 
-            embedInteraction = interaction.followUp {
+            embedInteraction = interaction.createPublicFollowup {
                 embed {
                     applyPage()
                     url?.let { addLinkButton(it) }
                 }
 
                 with(this@PublicFollowUpStandardPaginator.components) {
-                    this@followUp.applyToMessage()
+                    this@createPublicFollowup.applyToMessage()
                 }
             }
         } else {
@@ -67,14 +68,14 @@ class PublicFollowUpStandardPaginator(
         }
 
         active = false
-
-        if (!keepEmbed) {
-            embedInteraction?.delete()
-        } else {
-            embedInteraction?.edit {
-                embed { applyPage() }
-
-                this.components = mutableListOf()
+        failSilently {
+            if (!keepEmbed) {
+                embedInteraction?.delete()
+            } else {
+                embedInteraction?.edit {
+                    embed { applyPage() }
+                    components = mutableListOf()
+                }
             }
         }
 
@@ -86,7 +87,7 @@ class PublicFollowUpStandardPaginator(
 @Suppress("FunctionNaming")  // Factory function
 fun PublicFollowUpStandardPaginator(
     builder: PaginatorBuilder,
-    interaction: InteractionResponseBehavior
+    interaction: FollowupPermittingInteractionResponseBehavior
 ): PublicFollowUpStandardPaginator = PublicFollowUpStandardPaginator(
     pages = builder.pages,
     owner = builder.owner,

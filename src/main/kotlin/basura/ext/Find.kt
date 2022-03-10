@@ -1,6 +1,8 @@
 package basura.ext
 
+import basura.AppDispatchers
 import basura.abbreviate
+import basura.action
 import basura.db.guilds
 import basura.graphql.AniList
 import basura.graphql.anilist.MediaType
@@ -15,6 +17,8 @@ import com.kotlindiscord.kord.extensions.types.PublicInteractionContext
 import com.kotlindiscord.kord.extensions.types.respond
 import com.kotlindiscord.kord.extensions.utils.focusedOption
 import dev.kord.core.behavior.interaction.suggestString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.ktorm.database.Database
@@ -33,7 +37,7 @@ class Find : Extension() {
         publicSlashCommand(::FindArgs) {
             name = "find"
             description = "Looks up the name of the anime/manga."
-            action {
+            action(AppDispatchers.IO) {
                 findMedia(arguments.query)
             }
         }
@@ -41,7 +45,7 @@ class Find : Extension() {
         publicSlashCommand(::FindAnimeArgs) {
             name = "anime"
             description = "Looks up the name of the anime."
-            action {
+            action(AppDispatchers.IO) {
                 findMedia(arguments.query, MediaType.ANIME)
             }
         }
@@ -49,14 +53,14 @@ class Find : Extension() {
         publicSlashCommand(::FindMangaArgs) {
             name = "manga"
             description = "Looks up the name of the manga."
-            action {
+            action(AppDispatchers.IO) {
                 findMedia(arguments.query, MediaType.MANGA)
             }
         }
 
         publicMessageCommand {
             name = "Search Trash"
-            action {
+            action(AppDispatchers.IO) {
                 findMedia(targetMessages.first().content)
             }
         }
@@ -89,13 +93,14 @@ class Find : Extension() {
             description = "Name of the anime/manga."
             autoComplete {
                 if (!focusedOption.focused) return@autoComplete
-                val typed = focusedOption.value as String
-                val mediaTitles = aniList.findMediaTitles(typed).take(25)
+                val typed = focusedOption.value
 
                 suggestString {
-                    for (media in mediaTitles) {
-                        choice(media.abbreviate(100), media)
-                    }
+                    aniList.findMediaTitles(typed)
+                        .take(25)
+                        .forEach { media ->
+                            choice(media.abbreviate(100), media)
+                        }
                 }
             }
         }
@@ -108,13 +113,14 @@ class Find : Extension() {
 
             autoComplete {
                 if (!focusedOption.focused) return@autoComplete
-                val typed = focusedOption.value as String
-                val mediaTitles = aniList.findMediaTitles(typed, MediaType.ANIME).take(25)
+                val typed = focusedOption.value
 
                 suggestString {
-                    for (media in mediaTitles) {
-                        choice(media.abbreviate(100), media)
-                    }
+                    aniList.findMediaTitles(typed, MediaType.ANIME)
+                        .take(25)
+                        .forEach { media ->
+                            choice(media.abbreviate(100), media)
+                        }
                 }
             }
         }
@@ -127,11 +133,10 @@ class Find : Extension() {
 
             autoComplete {
                 if (!focusedOption.focused) return@autoComplete
-                val typed = focusedOption.value as String
-                val mediaTitles = aniList.findMediaTitles(typed, MediaType.MANGA).take(25)
+                val typed = focusedOption.value
 
                 suggestString {
-                    for (media in mediaTitles) {
+                    aniList.findMediaTitles(typed, MediaType.MANGA).take(25).forEach { media ->
                         choice(media.abbreviate(100), media)
                     }
                 }

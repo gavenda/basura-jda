@@ -1,6 +1,8 @@
 package basura.ext
 
+import basura.AppDispatchers
 import basura.abbreviate
+import basura.action
 import basura.db.users
 import basura.embed.createUserEmbed
 import basura.graphql.AniList
@@ -13,7 +15,6 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicUserCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import com.kotlindiscord.kord.extensions.utils.focusedOption
 import dev.kord.core.behavior.interaction.suggestString
 import dev.kord.rest.builder.message.create.embed
 import org.koin.core.component.inject
@@ -33,7 +34,7 @@ class User : Extension() {
         publicSlashCommand(::UserArgs) {
             name = "user"
             description = "Looks up the statistics of a user's AniList."
-            action {
+            action(AppDispatchers.IO) {
                 val username = arguments.username
 
                 if (username != null) {
@@ -113,7 +114,7 @@ class User : Extension() {
             check {
                 anyGuild()
             }
-            action {
+            action(AppDispatchers.IO) {
                 val userIdLong = targetUsers.first().id.value.toLong()
                 val guildIdLong = guild!!.id.value.toLong()
                 val dbUsername = db.users.firstOrNull {
@@ -162,11 +163,10 @@ class User : Extension() {
 
             autoComplete {
                 if (!focusedOption.focused) return@autoComplete
-                val typed = focusedOption.value as String
-                val usernames = aniList.findUserNames(typed).take(25)
+                val typed = focusedOption.value
 
                 suggestString {
-                    for (username in usernames) {
+                    aniList.findUserNames(typed).take(25).forEach { username ->
                         choice(username.abbreviate(100), username)
                     }
                 }
