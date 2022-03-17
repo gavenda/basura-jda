@@ -1,3 +1,5 @@
+Project has been moved to [studio-helper](https://github.com/gavenda/studio-helper).
+
 # Basura
 
 A Discord bot purely based on the open source code of [Annie May](https://github.com/AlexanderColen/Annie-May-Discord-Bot).
